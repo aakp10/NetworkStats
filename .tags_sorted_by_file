@@ -1,0 +1,241 @@
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ConnList_init	ConnList.cpp	/^void ConnList_init(ConnList *clist,Connection *m_val, ConnList *m_next) {$/;"	f
+ConnList	ConnList.h	/^typedef struct _ConnList ConnList;$/;"	t	typeref:struct:_ConnList
+Connection	ConnList.h	/^typedef struct _Connection Connection;$/;"	t	typeref:struct:_Connection
+_ConnList	ConnList.h	/^struct _ConnList {$/;"	s
+__ConnList_H	ConnList.h	2;"	d
+getNext	ConnList.h	/^  ConnList *getNext(ConnList *clist) { return clist->next; }$/;"	f
+getVal	ConnList.h	/^  Connection *getVal(ConnList *clist) { return clist->val; }$/;"	f
+next	ConnList.h	/^  ConnList *next;$/;"	m	struct:_ConnList
+setNext	ConnList.h	/^  void setNext(ConnList *clist,ConnList *m_next) { clist->next = m_next; }$/;"	f
+val	ConnList.h	/^  Connection *val;$/;"	m	struct:_ConnList
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+Connection_init	connection.cpp	/^void Connection_init(Connection *conn,Packet *packet){$/;"	f
+Connection_sumanddel	connection.cpp	/^ void Connection_sumanddel(Connection *conn,timeval t, u_int64_t *recv, u_int64_t *sent) {$/;"	f
+PERIOD	connection.cpp	9;"	d	file:
+PackList_sumanddel	connection.cpp	/^u_int64_t PackList_sumanddel(PackList *pklist,timeval t) {$/;"	f
+addConnection	connection.cpp	/^void addConnection(Connection *conn,Packet *packet) {$/;"	f
+addPacket	connection.cpp	/^void addPacket(PackList *pkList,Packet *p) {$/;"	f
+connections	connection.cpp	/^ ConnList *connections ;$/;"	v
+findConnection	connection.cpp	/^Connection * findConnection(Packet *packet) {$/;"	f
+findConnectionWithMatchingRefpacketOrSource	connection.cpp	/^Connection *findConnectionWithMatchingRefpacketOrSource(Packet *packet) {$/;"	f
+findConnectionWithMatchingSource	connection.cpp	/^Connection *findConnectionWithMatchingSource(Packet *packet) {$/;"	f
+Connection	connection.h	/^typedef struct _Connection Connection;$/;"	t	typeref:struct:_Connection
+PackList	connection.h	/^typedef struct _PackList PackList;$/;"	t	typeref:struct:_PackList
+PackListNode	connection.h	/^typedef struct _PackListNode PackListNode;$/;"	t	typeref:struct:_PackListNode
+PackListNode_init	connection.h	/^void PackListNode_init(PackListNode *pkList,Packet *m_val, PackListNode *m_next = NULL) {$/;"	f
+PackList_init	connection.h	/^void PackList_init(PackList *pkList) { pkList->content = NULL; }$/;"	f
+PackList_init	connection.h	/^void PackList_init(PackList *pkList,Packet *m_val) {$/;"	f
+_Connection	connection.h	/^struct _Connection {$/;"	s
+_PackList	connection.h	/^struct _PackList {$/;"	s
+_PackListNode	connection.h	/^struct _PackListNode {$/;"	s
+__CONNECTION_H	connection.h	2;"	d
+content	connection.h	/^  PackListNode *content;$/;"	m	struct:_PackList
+getLastPacket	connection.h	/^  int getLastPacket(Connection *conn) { return conn->lastpacket; }$/;"	f
+lastpacket	connection.h	/^  int lastpacket;$/;"	m	struct:_Connection
+next	connection.h	/^PackListNode *next;$/;"	m	struct:_PackListNode
+recv_packets	connection.h	/^  PackList *recv_packets;$/;"	m	struct:_Connection
+refpacket	connection.h	/^  Packet *refpacket;$/;"	m	struct:_Connection
+sent_packets	connection.h	/^  PackList *sent_packets;$/;"	m	struct:_Connection
+sumRecv	connection.h	/^  u_int64_t sumRecv;$/;"	m	struct:_Connection
+sumSent	connection.h	/^  u_int64_t sumSent;$/;"	m	struct:_Connection
+val	connection.h	/^Packet *val;$/;"	m	struct:_PackListNode
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+Packet	packet.h	/^typedef struct _Packet Packet;$/;"	t	typeref:struct:_Packet
+_Packet	packet.h	/^struct _Packet{$/;"	s
+__PACKET_H	packet.h	2;"	d
+dip	packet.h	/^  in_addr dip;$/;"	m	struct:_Packet
+dip6	packet.h	/^  in6_addr dip6;$/;"	m	struct:_Packet
+dir	packet.h	/^    direction dir;$/;"	m	struct:_Packet
+dir_incoming	packet.h	/^enum direction { dir_unknown, dir_incoming, dir_outgoing };$/;"	e	enum:direction
+dir_outgoing	packet.h	/^enum direction { dir_unknown, dir_incoming, dir_outgoing };$/;"	e	enum:direction
+dir_unknown	packet.h	/^enum direction { dir_unknown, dir_incoming, dir_outgoing };$/;"	e	enum:direction
+direction	packet.h	/^enum direction { dir_unknown, dir_incoming, dir_outgoing };$/;"	g
+dport	packet.h	/^  unsigned short dport;$/;"	m	struct:_Packet
+hashstring	packet.h	/^  char *hashstring;$/;"	m	struct:_Packet
+len	packet.h	/^  u_int32_t len;$/;"	m	struct:_Packet
+sa_family	packet.h	/^  short int sa_family;$/;"	m	struct:_Packet
+sip	packet.h	/^  in_addr sip;$/;"	m	struct:_Packet
+sip6	packet.h	/^  in6_addr sip6;$/;"	m	struct:_Packet
+sport	packet.h	/^  unsigned short sport;$/;"	m	struct:_Packet
+time	packet.h	/^  timeval time;$/;"	m	struct:_Packet
+CONNTIMEOUT	procfile.cpp	36;"	d	file:
+HASHKEYSIZE	procfile.cpp	25;"	d	file:
+Line	procfile.cpp	/^typedef struct _Line Line;$/;"	t	typeref:struct:_Line	file:
+Line_init	procfile.cpp	/^void Line_init(Line *ln,const char *name, const char *cmdline, double n_recv_value,$/;"	f
+Outgoing	procfile.cpp	/^bool Outgoing(Packet *pk) {$/;"	f
+PERIOD	procfile.cpp	37;"	d	file:
+Packet_init	procfile.cpp	/^void Packet_init(Packet *pk,const Packet &old_packet) {$/;"	f
+Packet_init	procfile.cpp	/^void Packet_init(Packet *pk,in6_addr m_sip, unsigned short m_sport, in6_addr m_dip,$/;"	f
+Packet_init	procfile.cpp	/^void Packet_init(Packet *pk,in_addr m_sip, unsigned short m_sport, in_addr m_dip,$/;"	f
+Packet_isOlderThan	procfile.cpp	/^bool Packet_isOlderThan(Packet *pk,timeval t) {$/;"	f
+Packet_match	procfile.cpp	/^bool Packet_match(Packet *pk,Packet *other) {$/;"	f
+Packet_matchSource	procfile.cpp	/^bool Packet_matchSource(Packet *pk,Packet *other) {$/;"	f
+ProcList	procfile.cpp	/^typedef struct _ProcList ProcList;$/;"	t	typeref:struct:_ProcList	file:
+ProcList_init	procfile.cpp	/^  void ProcList_init(ProcList *plist,Process *m_val, ProcList *m_next) {$/;"	f
+Process	procfile.cpp	/^typedef struct _Process Process;$/;"	t	typeref:struct:_Process	file:
+Process_gettotal	procfile.cpp	/^  void Process_gettotal(Process *proc, u_int64_t *recvd, u_int64_t *sent){$/;"	f
+Process_init	procfile.cpp	/^  void Process_init(Process *proc,const unsigned long m_inode, const char *m_devicename,$/;"	f
+TH_ACK	procfile.cpp	1021;"	d	file:
+TH_CWR	procfile.cpp	1024;"	d	file:
+TH_ECE	procfile.cpp	1023;"	d	file:
+TH_FIN	procfile.cpp	1017;"	d	file:
+TH_PUSH	procfile.cpp	1020;"	d	file:
+TH_RST	procfile.cpp	1019;"	d	file:
+TH_SYN	procfile.cpp	1018;"	d	file:
+TH_URG	procfile.cpp	1022;"	d	file:
+_Line	procfile.cpp	/^struct _Line {$/;"	s	file:
+_ProcList	procfile.cpp	/^struct _ProcList {$/;"	s	file:
+_Process	procfile.cpp	/^struct _Process {$/;"	s	file:
+_device	procfile.cpp	/^struct _device {$/;"	s	file:
+_handle	procfile.cpp	/^struct _handle {$/;"	s	file:
+_local_addr	procfile.cpp	/^struct _local_addr{$/;"	s	file:
+addprocinfo	procfile.cpp	/^int addprocinfo(const char *filename) {$/;"	f
+addr	procfile.cpp	/^	in_addr_t addr;$/;"	m	struct:_local_addr	file:
+addr6	procfile.cpp	/^	struct in6_addr addr6;$/;"	m	struct:_local_addr	typeref:struct:_local_addr::in6_addr	file:
+addtoconninode	procfile.cpp	/^void addtoconninode(char *buffer) {$/;"	f
+callback	procfile.cpp	/^  dp_callback callback[dp_n_packet_types];$/;"	m	struct:dp_handle	file:
+cmdline	procfile.cpp	/^  char *cmdline;$/;"	m	struct:_Process	file:
+cmdline	procfile.cpp	/^  std::string cmdline;$/;"	m	struct:prg_node	file:
+connections	procfile.cpp	/^  ConnList *connections;$/;"	m	struct:_Process	file:
+content	procfile.cpp	/^    dp_handle *content;$/;"	m	struct:_handle	file:
+curtime	procfile.cpp	/^timeval curtime;$/;"	v
+device	procfile.cpp	/^  const char *device;$/;"	m	struct:dpargs	file:
+device	procfile.cpp	/^typedef struct _device device;$/;"	t	typeref:struct:_device	file:
+device_init	procfile.cpp	/^ void device_init(device *dev,const char *m_name, device *m_next = NULL) {$/;"	f
+devicename	procfile.cpp	/^  const char *devicename;$/;"	m	struct:_Line	file:
+devicename	procfile.cpp	/^  const char *devicename;$/;"	m	struct:_Process	file:
+devicename	procfile.cpp	/^  const char *devicename;$/;"	m	struct:_handle	file:
+do_refresh	procfile.cpp	/^void do_refresh() {$/;"	f
+dp_addcb	procfile.cpp	/^void dp_addcb(struct dp_handle *handle, enum dp_packet_type type,$/;"	f
+dp_callback	procfile.cpp	/^typedef int (*dp_callback)(u_char *, const dp_header *, const u_char *);$/;"	t	file:
+dp_dispatch	procfile.cpp	/^int dp_dispatch(struct dp_handle *handle, int count, u_char *user, int size) {$/;"	f
+dp_fillhandle	procfile.cpp	/^struct dp_handle *dp_fillhandle(pcap_t *phandle) {$/;"	f
+dp_handle	procfile.cpp	/^struct dp_handle {$/;"	s	file:
+dp_header	procfile.cpp	/^typedef struct pcap_pkthdr dp_header;$/;"	t	typeref:struct:pcap_pkthdr	file:
+dp_n_packet_types	procfile.cpp	/^  dp_n_packet_types$/;"	e	enum:dp_packet_type	file:
+dp_open_live	procfile.cpp	/^struct dp_handle *dp_open_live(const char *device, int snaplen, int promisc,$/;"	f
+dp_packet_ethernet	procfile.cpp	/^  dp_packet_ethernet,$/;"	e	enum:dp_packet_type	file:
+dp_packet_ip	procfile.cpp	/^  dp_packet_ip,$/;"	e	enum:dp_packet_type	file:
+dp_packet_ip6	procfile.cpp	/^  dp_packet_ip6,$/;"	e	enum:dp_packet_type	file:
+dp_packet_ppp	procfile.cpp	/^  dp_packet_ppp,$/;"	e	enum:dp_packet_type	file:
+dp_packet_sll	procfile.cpp	/^  dp_packet_sll,$/;"	e	enum:dp_packet_type	file:
+dp_packet_tcp	procfile.cpp	/^  dp_packet_tcp,$/;"	e	enum:dp_packet_type	file:
+dp_packet_type	procfile.cpp	/^enum dp_packet_type {$/;"	g	file:
+dp_packet_udp	procfile.cpp	/^  dp_packet_udp,$/;"	e	enum:dp_packet_type	file:
+dp_parse_ethernet	procfile.cpp	/^void dp_parse_ethernet(struct dp_handle *handle, const dp_header *header,$/;"	f
+dp_parse_ip	procfile.cpp	/^void dp_parse_ip(struct dp_handle *handle, const dp_header *header,$/;"	f
+dp_parse_ip6	procfile.cpp	/^void dp_parse_ip6(struct dp_handle *handle, const dp_header *header,$/;"	f
+dp_parse_tcp	procfile.cpp	/^void dp_parse_tcp(struct dp_handle *handle, const dp_header *header,$/;"	f
+dp_pcap_callback	procfile.cpp	/^void dp_pcap_callback(u_char *u_handle, const struct pcap_pkthdr *header,$/;"	f
+dpargs	procfile.cpp	/^struct dpargs {$/;"	s	file:
+dummy1	procfile.cpp	/^  u_int16_t dummy1;$/;"	m	struct:ppp_header	file:
+dummy2	procfile.cpp	/^  u_int16_t dummy2;$/;"	m	struct:ppp_header	file:
+dummy3	procfile.cpp	/^  u_int16_t dummy3;$/;"	m	struct:ppp_header	file:
+dummy4	procfile.cpp	/^  u_int16_t dummy4;$/;"	m	struct:ppp_header	file:
+dummy5	procfile.cpp	/^  u_int16_t dummy5;$/;"	m	struct:ppp_header	file:
+dummy6	procfile.cpp	/^  u_int16_t dummy6;$/;"	m	struct:ppp_header	file:
+dummy7	procfile.cpp	/^  u_int16_t dummy7;$/;"	m	struct:ppp_header	file:
+errbuf	procfile.cpp	/^char errbuf[PCAP_ERRBUF_SIZE];$/;"	v
+findPID	procfile.cpp	/^struct prg_node *findPID(unsigned long inode) {$/;"	f
+findProcess	procfile.cpp	/^Process *findProcess(struct prg_node *node) {$/;"	f
+findProcess	procfile.cpp	/^Process *findProcess(unsigned long inode) {$/;"	f
+getInode	procfile.cpp	/^  unsigned long getInode(Process *proc) { return proc->inode; }$/;"	f
+getLastPacket	procfile.cpp	/^  int getLastPacket(Process *proc){$/;"	f
+getLocal	procfile.cpp	/^bool getLocal(const char *device) {$/;"	f
+getNext	procfile.cpp	/^  ProcList *getNext(ProcList *plist) { return plist->next; }$/;"	f
+getProcess	procfile.cpp	/^Process *getProcess(Connection *connection, const char *devicename) {$/;"	f
+getProcess	procfile.cpp	/^Process *getProcess(unsigned long inode, const char *devicename) {$/;"	f
+getUid	procfile.cpp	/^  uid_t getUid(Process *proc) { return proc->uid; }$/;"	f
+getVal	procfile.cpp	/^  Process *getVal(ProcList *plist) { return plist->val; }$/;"	f
+get_devices	procfile.cpp	/^device *get_devices() {$/;"	f
+gethashstring	procfile.cpp	/^char * gethashstring(Packet *pk) {$/;"	f
+getkbps	procfile.cpp	/^  void getkbps(Process *proc,float *recvd, float *sent){$/;"	f
+handle	procfile.cpp	/^typedef struct _handle handle;$/;"	t	typeref:struct:_handle	file:
+handle_init	procfile.cpp	/^void handle_init(handle *hdl,dp_handle *m_handle, const char *m_devicename = NULL,$/;"	f
+handles	procfile.cpp	/^static handle *handles = NULL;$/;"	v	file:
+inode	procfile.cpp	/^  const unsigned long inode;$/;"	m	struct:_Process	file:
+inode	procfile.cpp	/^  long inode;$/;"	m	struct:prg_node	file:
+inodeproc	procfile.cpp	/^std::map<unsigned long, prg_node *> inodeproc;$/;"	v
+invert	procfile.cpp	/^direction invert(direction dir) {$/;"	f
+ip6_dst	procfile.cpp	/^  in6_addr ip6_dst;$/;"	m	struct:dpargs	file:
+ip6_src	procfile.cpp	/^  in6_addr ip6_src;$/;"	m	struct:dpargs	file:
+ip_dst	procfile.cpp	/^  in_addr ip_dst;$/;"	m	struct:dpargs	file:
+ip_src	procfile.cpp	/^  in_addr ip_src;$/;"	m	struct:dpargs	file:
+last_refresh_time	procfile.cpp	/^static time_t last_refresh_time = 0;$/;"	v	file:
+linktype	procfile.cpp	/^  int linktype;$/;"	m	struct:dp_handle	file:
+local_addr	procfile.cpp	/^typedef struct _local_addr local_addr;$/;"	t	typeref:struct:_local_addr	file:
+local_addr_contains	procfile.cpp	/^bool local_addr_contains(local_addr *laddr,const in_addr_t &n_addr) {$/;"	f
+local_addr_contains	procfile.cpp	/^bool local_addr_contains(local_addr *laddr,const struct in6_addr &n_addr) {$/;"	f
+local_addr_init	procfile.cpp	/^void local_addr_init(local_addr *laddr,in_addr_t m_addr,local_addr *mnext=NULL){$/;"	f
+local_addr_init	procfile.cpp	/^void local_addr_init(local_addr *laddr,struct in6_addr *m_addr, local_addr *m_next = NULL) {$/;"	f
+local_addrs	procfile.cpp	/^local_addr *local_addrs = NULL;$/;"	v
+log	procfile.cpp	/^void log(Line *ln) {$/;"	f
+m_cmdline	procfile.cpp	/^  const char *m_cmdline;$/;"	m	struct:_Line	file:
+m_name	procfile.cpp	/^const char *m_name;$/;"	m	struct:_Line	file:
+m_pid	procfile.cpp	/^  pid_t m_pid;$/;"	m	struct:_Line	file:
+m_uid	procfile.cpp	/^  uid_t m_uid;$/;"	m	struct:_Line	file:
+main	procfile.cpp	/^int main(int argc, char ** argv){$/;"	f
+name	procfile.cpp	/^  char *name;$/;"	m	struct:_Process	file:
+name	procfile.cpp	/^  const char *name;$/;"	m	struct:_device	file:
+newInverted	procfile.cpp	/^Packet * newInverted(Packet *pk) {$/;"	f
+next	procfile.cpp	/^	local_addr *next;$/;"	m	struct:_local_addr	file:
+next	procfile.cpp	/^  device *next;$/;"	m	struct:_device	file:
+next	procfile.cpp	/^  handle *next;$/;"	m	struct:_handle	file:
+next	procfile.cpp	/^ ProcList *next;$/;"	m	struct:_ProcList	file:
+packettype	procfile.cpp	/^  u_int16_t packettype;$/;"	m	struct:ppp_header	file:
+pcap_handle	procfile.cpp	/^  pcap_t *pcap_handle;$/;"	m	struct:dp_handle	file:
+pid	procfile.cpp	/^  int pid;$/;"	m	struct:_Process	file:
+pid	procfile.cpp	/^  pid_t pid;$/;"	m	struct:prg_node	file:
+ppp_header	procfile.cpp	/^struct ppp_header {$/;"	s	file:
+prg_node	procfile.cpp	/^struct prg_node {$/;"	s	file:
+printConninode	procfile.cpp	/^void printConninode(){$/;"	f
+printDevices	procfile.cpp	/^void printDevices(device *dev){$/;"	f
+printHandles	procfile.cpp	/^void printHandles(handle *handles){$/;"	f
+process_init	procfile.cpp	/^void process_init() {$/;"	f
+process_ip	procfile.cpp	/^int process_ip(u_char *userdata, const dp_header * \/* header *\/,$/;"	f
+process_ip6	procfile.cpp	/^int process_ip6(u_char *userdata, const dp_header * \/* header *\/,$/;"	f
+process_tcp	procfile.cpp	/^int process_tcp(u_char *userdata, const dp_header *header,$/;"	f
+processes	procfile.cpp	/^ProcList *processes;$/;"	v
+promisc	procfile.cpp	/^int promisc =1;$/;"	v
+rcvd_by_closed_bytes	procfile.cpp	/^  u_int64_t rcvd_by_closed_bytes;$/;"	m	struct:_Process	file:
+recv_value	procfile.cpp	/^  double recv_value;$/;"	m	struct:_Line	file:
+refreshcount	procfile.cpp	/^unsigned refreshcount = 0;$/;"	v
+refreshdelay	procfile.cpp	/^time_t refreshdelay = 1;$/;"	v
+sa_family	procfile.cpp	/^	short int sa_family;$/;"	m	struct:_local_addr	file:
+sa_family	procfile.cpp	/^  int sa_family;$/;"	m	struct:dpargs	file:
+samein6addr	procfile.cpp	/^bool samein6addr(in6_addr one, in6_addr other) {$/;"	f
+sameinaddr	procfile.cpp	/^bool sameinaddr(in_addr one, in_addr other) {$/;"	f
+search	procfile.cpp	/^bool search(const char *m_name,device *dev){$/;"	f
+sent_by_closed_bytes	procfile.cpp	/^  u_int64_t sent_by_closed_bytes;$/;"	m	struct:_Process	file:
+sent_value	procfile.cpp	/^  double sent_value;$/;"	m	struct:_Line	file:
+setUid	procfile.cpp	/^  void setUid(Process *proc,uid_t m_uid) { proc->uid = m_uid; }$/;"	f
+show_trace	procfile.cpp	/^void show_trace(Line *lines[], int nproc) {$/;"	f
+size	procfile.cpp	/^  int size(ProcList *plist){$/;"	f
+string	procfile.cpp	/^	char *string;$/;"	m	struct:_local_addr	file:
+tcp_hdr	procfile.cpp	/^struct tcp_hdr {$/;"	s	file:
+tcp_seq	procfile.cpp	/^typedef u_int32_t tcp_seq;$/;"	t	file:
+th_ack	procfile.cpp	/^  tcp_seq th_ack;   \/* acknowledgement number *\/$/;"	m	struct:tcp_hdr	file:
+th_dport	procfile.cpp	/^  u_short th_dport; \/* destination port *\/$/;"	m	struct:tcp_hdr	file:
+th_flags	procfile.cpp	/^  u_char th_flags;$/;"	m	struct:tcp_hdr	file:
+th_off	procfile.cpp	/^      th_off : 4;  \/* data offset *\/$/;"	m	struct:tcp_hdr	file:
+th_off	procfile.cpp	/^  u_int th_off : 4, \/* data offset *\/$/;"	m	struct:tcp_hdr	file:
+th_seq	procfile.cpp	/^  tcp_seq th_seq;   \/* sequence number *\/$/;"	m	struct:tcp_hdr	file:
+th_sport	procfile.cpp	/^  u_short th_sport; \/* source port *\/$/;"	m	struct:tcp_hdr	file:
+th_sum	procfile.cpp	/^  u_short th_sum; \/* checksum *\/$/;"	m	struct:tcp_hdr	file:
+th_urp	procfile.cpp	/^  u_short th_urp; \/* urgent pointer *\/$/;"	m	struct:tcp_hdr	file:
+th_win	procfile.cpp	/^  u_short th_win; \/* window *\/$/;"	m	struct:tcp_hdr	file:
+th_x2	procfile.cpp	/^      th_x2 : 4;    \/* (unused) *\/$/;"	m	struct:tcp_hdr	file:
+th_x2	procfile.cpp	/^  u_int th_x2 : 4, \/* (unused) *\/$/;"	m	struct:tcp_hdr	file:
+tokb	procfile.cpp	/^float tokb(u_int64_t bytes) { return ((double)bytes) \/ 1024; }$/;"	f
+tokbps	procfile.cpp	/^float tokbps(u_int64_t bytes) { return (((double)bytes) \/ PERIOD) \/ 1024; }$/;"	f
+uid	procfile.cpp	/^  uid_t uid;$/;"	m	struct:_Process	file:
+unknownip	procfile.cpp	/^Process *unknownip;$/;"	v
+unknowntcp	procfile.cpp	/^Process *unknowntcp;$/;"	v
+unknownudp	procfile.cpp	/^Process *unknownudp;$/;"	v
+userdata	procfile.cpp	/^  u_char *userdata;$/;"	m	struct:dp_handle	file:
+userdata_size	procfile.cpp	/^  int userdata_size;$/;"	m	struct:dp_handle	file:
+val	procfile.cpp	/^ Process *val;$/;"	m	struct:_ProcList	file:

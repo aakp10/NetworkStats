@@ -3,20 +3,18 @@
 
 #include <cassert>
 #include "connection.h"
-class Connection;
-class ConnList {
-public:
-  ConnList(Connection *m_val, ConnList *m_next);
-  ~ConnList() {
-    /* does not delete its value, to allow a connection to
-     * remove itself from the global connlist in its destructor */
-  }
-  Connection *getVal() { return val; }
-  void setNext(ConnList *m_next) { next = m_next; }
-  ConnList *getNext() { return next; }
+typedef struct _ConnList ConnList;
+struct _Connection;
+typedef struct _Connection Connection;
+struct _ConnList {
 
-private:
   Connection *val;
   ConnList *next;
 };
+
+ void  ConnList_init(ConnList *clist,Connection *m_val, ConnList *m_next);
+ 
+  Connection *ConnListgetVal(ConnList *clist); 
+  void setNext(ConnList *clist,ConnList *m_next) ;
+  ConnList *getNext(ConnList *clist) ;
 #endif

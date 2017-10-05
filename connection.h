@@ -4,56 +4,53 @@
 #include <iostream>
 #include "packet.h"
 #include "ConnList.h"
-class PackListNode {
-public:
-  PackListNode(Packet *m_val, PackListNode *m_next = NULL) {
-    val = m_val;
-    next = m_next;
-  }
-  ~PackListNode() {
-    delete val;
-    if (next != NULL)
-      delete next;
-  }
-  PackListNode *next;
-  Packet *val;
+typedef struct _PackListNode PackListNode;
+typedef struct _PackList PackList;
+typedef struct _Connection Connection;
+struct _PackListNode {
+PackListNode *next;
+Packet *val;
+  
 };
 
-class PackList {
-public:
-  PackList() { content = NULL; }
-  PackList(Packet *m_val) {
-    //assert(m_val != NULL);
-    content = new PackListNode(m_val);
-  }
-  ~PackList() {
-    if (content != NULL)
-      delete content;
-  }
 
-  /* sums up the total bytes used and removes 'old' packets */
-  u_int64_t sumanddel(timeval t);
+void PackListNode_init(PackListNode *pkList,Packet *m_val, PackListNode *m_next = NULL) ;
+
+struct _PackList {
+  PackListNode *content;
+
+};
+
+
+void PackList_init(PackList *pkList) ;
+void PackList_init(PackList *pkList,Packet *m_val);
+/* sums up the total bytes used and removes 'old' packets */
+  u_int64_t PackList_sumanddel(PackList *pklist,timeval t);
 
   /* calling code may delete packet */
-  void add(Packet *p);
+  void addPacket(PackList *pklist,Packet *p);
 
-private:
-  PackListNode *content;
-};
-
-
-class Connection {
+struct _Connection {
 
   /* constructs a connection, makes a copy of
    * the packet as 'refpacket', and adds the
    * packet to the packlist */
   /* packet may be deleted by caller */
-private:
+
   PackList *sent_packets;
   PackList *recv_packets;
   int lastpacket;
-public:
-  Connection(Packet *packet);
+ /* for checking if a packet is part of this connection */
+  /* the reference packet is always *outgoing*. */
+  Packet *refpacket;
+
+  /* total sum or sent/received bytes */
+  u_int64_t sumSent;
+  u_int64_t sumRecv;
+
+  
+};
+void Connection_init(Connection *conn,Packet *packet);
 
  // ~Connection();
 
@@ -62,24 +59,16 @@ public:
    * when it is 'merged with' (added to) another
    * packet
    */
-  void add(Packet *packet);
+  void addConnection(Connection *conn,Packet *packet);
 
-  int getLastPacket() { return lastpacket; }
+  int getLastPacket(Connection *conn);
 
   /* sums up the total bytes used
    * and removes 'old' packets. */
-  void sumanddel(timeval curtime, u_int64_t *recv, u_int64_t *sent);
-  /* for checking if a packet is part of this connection */
-  /* the reference packet is always *outgoing*. */
-  Packet *refpacket;
-
-  /* total sum or sent/received bytes */
-  u_int64_t sumSent;
-  u_int64_t sumRecv;
+  void Connection_sumanddel(Connection *conn,timeval curtime, u_int64_t *recv, u_int64_t *sent);
+ 
 
 
-
-};
 Connection *findConnection(Packet *packet);
 #endif
 

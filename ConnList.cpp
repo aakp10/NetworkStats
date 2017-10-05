@@ -1,8 +1,12 @@
 #include "connection.h"
 #include "ConnList.h"
 
-ConnList::ConnList(Connection *m_val, ConnList *m_next) {
+void ConnList_init(ConnList *clist,Connection *m_val, ConnList *m_next) {
     assert(m_val != NULL);
-    val = m_val;
-    next = m_next;
+   clist->val = m_val;
+    clist->next = m_next;
   }
+  Connection *ConnListgetVal(ConnList *clist)
+  { return clist->val; }
+   void setNext(ConnList *clist,ConnList *m_next) { clist->next = m_next; }
+    ConnList *getNext(ConnList *clist) { return clist->next; }

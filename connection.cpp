@@ -9,77 +9,108 @@
 #define PERIOD 5
 
 
-ConnList *connections = NULL;
+ ConnList *connections ;
+ void PackListNode_init(PackListNode *pkList,Packet *m_val, PackListNode *m_next ) {
+    pkList->val = m_val;
+    pkList->next = m_next;
+  }
+  void PackList_init(PackList *pkList) { pkList->content = NULL; }
+  void PackList_init(PackList *pkList,Packet *m_val) {
+    //assert(m_val != NULL);
+    PackListNode *pkNode=(PackListNode *)malloc(sizeof(PackListNode));
+    PackListNode_init(pkNode,m_val);
+    pkList->content = pkNode;
+  }
 
-void PackList::add(Packet *p) {
-  if (content == NULL) {
-    content = new PackListNode(new Packet(*p));
+void addPacket(PackList *pkList,Packet *p) {
+  if (pkList->content == NULL) {
+    Packet *pk=(Packet *)malloc(sizeof(Packet));
+    Packet_init(pk,*p);
+    PackListNode *pkNode=(PackListNode *)malloc(sizeof(PackListNode));
+    PackListNode_init(pkNode,pk);
+    pkList->content = pkNode;
     return;
   }
 
-  if (content->val->time.tv_sec == p->time.tv_sec) {
-    content->val->len += p->len;
+  if (pkList->content->val->time.tv_sec == p->time.tv_sec) {
+    pkList->content->val->len += p->len;
     return;
   }
 
   /* store copy of packet, so that original may be freed */
-  content = new PackListNode(new Packet(*p), content);
+Packet *pk=(Packet *)malloc(sizeof(Packet));
+    Packet_init(pk,*p);
+    PackListNode *pkNode=(PackListNode *)malloc(sizeof(PackListNode));
+    PackListNode_init(pkNode,pk,pkList->content);
+
+  pkList->content = pkNode;
 }
 
-void Connection::add(Packet *packet) {
-  lastpacket = packet->time.tv_sec;
-  if (packet->Outgoing()) {
+void addConnection(Connection *conn,Packet *packet) {
+  conn->lastpacket = packet->time.tv_sec;
+  if (Outgoing(packet)) {
      {
       printf("OUTGOING:%d \n",packet->len);
     }
-    sumSent += packet->len;
-    sent_packets->add(packet);
+    conn->sumSent += packet->len;
+    addPacket(conn->sent_packets,packet);
+    
   } else {
      {
       printf("Incoming:%d \n",packet->len);
     }
-    sumRecv += packet->len;
+    conn->sumRecv += packet->len;
     {
-      printf("Incoming:%d \n",sumRecv);
+      printf("Incoming:%d \n",conn->sumRecv);
     }
-    recv_packets->add(packet);
+    addPacket(conn->recv_packets,packet);
+    
   }
 }
 
 
 
-Connection::Connection(Packet *packet){
+void Connection_init(Connection *conn,Packet *packet){
   //assert(packet != NULL);
-  connections = new ConnList(this, connections);
-  sent_packets = new PackList();
-  recv_packets = new PackList();
-  sumSent = 0;
-  sumRecv = 0;
+  connections = (ConnList *)malloc(sizeof(ConnList));
+  ConnList_init(connections,conn, connections);
   
-  if (packet->Outgoing()) {
-    sumSent += packet->len;
-    sent_packets->add(packet);
-    refpacket = new Packet(*packet);
+  conn->sent_packets =(PackList *)malloc(sizeof(PackList));
+  PackList_init(conn->sent_packets);
+
+  conn->recv_packets =(PackList *)malloc(sizeof(PackList));
+  PackList_init(conn->sent_packets);
+  conn->sumSent = 0;
+  conn->sumRecv = 0;
+  
+  if (Outgoing(packet)) {
+    conn->sumSent += packet->len;
+    
+    addPacket(conn->sent_packets,packet);
+    conn->refpacket =(Packet *)malloc(sizeof(Packet));
+     Packet_init(conn->refpacket,*packet);
   } else {
-    sumRecv += packet->len;
-    recv_packets->add(packet);
-    refpacket = packet->newInverted();
+    conn->sumRecv += packet->len;
+    addPacket(conn->recv_packets,packet);
+    conn->refpacket = newInverted(packet);
   }
-  lastpacket = packet->time.tv_sec;
+  conn->lastpacket = packet->time.tv_sec;
   
 }
 
-u_int64_t PackList::sumanddel(timeval t) {
+int getLastPacket(Connection *conn) { return conn->lastpacket; }
+
+u_int64_t PackList_sumanddel(PackList *pklist,timeval t) {
   u_int64_t retval = 0;
-  PackListNode *current = content;
+  PackListNode *current = pklist->content;
   PackListNode *previous = NULL;
 
   while (current != NULL) {
     // std::cout << "Comparing " << current->val->time.tv_sec << " <= " <<
     // t.tv_sec - PERIOD << endl;
     if (current->val->time.tv_sec <= t.tv_sec - PERIOD) {
-      if (current == content)
-        content = NULL;
+      if (current == pklist->content)
+        pklist->content = NULL;
       else if (previous != NULL)
         previous->next = NULL;
       delete current;
@@ -93,11 +124,12 @@ u_int64_t PackList::sumanddel(timeval t) {
 }
 
 
- void Connection::sumanddel(timeval t, u_int64_t *recv, u_int64_t *sent) {
+ void Connection_sumanddel(Connection *conn,timeval t, u_int64_t *recv, u_int64_t *sent) {
   (*sent) = (*recv) = 0;
 
-  *sent = sent_packets->sumanddel(t);
-  *recv = recv_packets->sumanddel(t);
+  *sent = PackList_sumanddel(conn->sent_packets,t);
+  *recv = PackList_sumanddel(conn->recv_packets,t);
+
 }
 
 
@@ -107,11 +139,11 @@ Connection *findConnectionWithMatchingSource(Packet *packet) {
   ConnList *current = connections;
   while (current != NULL) {
     /* the reference packet is always outgoing */
-    if (packet->matchSource(current->getVal()->refpacket)) {
-      return current->getVal();
+    if (Packet_matchSource(packet,ConnListgetVal(current)->refpacket)) {
+      return ConnListgetVal(current);
     }
 
-    current = current->getNext();
+    current = getNext(current);
   }
   return NULL;
 }
@@ -120,21 +152,21 @@ Connection *findConnectionWithMatchingRefpacketOrSource(Packet *packet) {
   ConnList *current = connections;
   while (current != NULL) {
     /* the reference packet is always *outgoing* */
-    if (packet->match(current->getVal()->refpacket)) {
-      return current->getVal();
+    if (Packet_match(packet,ConnListgetVal(current)->refpacket)) {
+      return ConnListgetVal(current);
     }
 
-    current = current->getNext();
+    current = getNext(current);
   }
   return findConnectionWithMatchingSource(packet);
 }
 
 
 Connection * findConnection(Packet *packet) {
-  if (packet->Outgoing())
+  if (Outgoing(packet))
     return findConnectionWithMatchingRefpacketOrSource(packet);
   else {
-    Packet *invertedPacket = packet->newInverted();
+    Packet *invertedPacket = newInverted(packet);
     Connection *result =
         findConnectionWithMatchingRefpacketOrSource(invertedPacket);
 

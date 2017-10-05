@@ -56,46 +56,40 @@ struct dpargs {
 /**
 *LINE FOR DISPLAY
 **/
-
-class Line {
-public:
-  Line(const char *name, const char *cmdline, double n_recv_value,
-       double n_sent_value, pid_t pid, uid_t uid, const char *n_devicename) {
-    assert(pid >= 0);
-   // assert(pid <= PID_MAX);
-    m_name = name;
-    m_cmdline = cmdline;
-    sent_value = n_sent_value;
-    recv_value = n_recv_value;
-    devicename = n_devicename;
-    m_pid = pid;
-    m_uid = uid;
-    assert(m_pid >= 0);
-  }
-
-  void show(int row, unsigned int proglen);
-  void log();
-
-  double sent_value;
-  double recv_value;
-
-private:
-  const char *m_name;
+typedef struct _Line Line;
+struct _Line {
+const char *m_name;
   const char *m_cmdline;
   const char *devicename;
   pid_t m_pid;
   uid_t m_uid;
+  double sent_value;
+  double recv_value;
+  
 };
+void Line_init(Line *ln,const char *name, const char *cmdline, double n_recv_value,
+       double n_sent_value, pid_t pid, uid_t uid, const char *n_devicename) {
+    assert(pid >= 0);
+   // assert(pid <= PID_MAX);
+    ln->m_name = name;
+    ln->m_cmdline = cmdline;
+    ln->sent_value = n_sent_value;
+    ln->recv_value = n_recv_value;
+    ln->devicename = n_devicename;
+    ln->m_pid = pid;
+    ln->m_uid = uid;
+    assert(ln->m_pid >= 0);
+  }
 
-void Line::log() {
-  std::cout << "m_pid :"<<m_pid<<"\tm_uid:"<< m_uid << "\tsent_value:" << sent_value << "\trecv value:" << recv_value <<"\tname of process:"<<m_name<<std::endl;
+void log(Line *ln) {
+  printf("m_pid :%d \t m_uid:%d \tsent_value:%f \trecv value:%f \tname of process:%s \n",ln->m_pid,ln->m_uid,ln->sent_value,ln->recv_value ,ln->m_name);
 }
 
 void show_trace(Line *lines[], int nproc) {
   
   /* print them */
   for (int i = 0; i < nproc; i++) {
-    lines[i]->log();
+    log(lines[i]);
     delete lines[i];
   }
 
@@ -166,11 +160,12 @@ void show_trace(Line *lines[], int nproc) {
 /**
 *PROCESS
 **/
-class Process {
-private:
+typedef struct _Process Process;
+struct _Process {
+
   const unsigned long inode;
   uid_t uid;
-public:
+
   /* the process makes a copy of the name. the device name needs to be stable.
    */
   char *name;
@@ -181,103 +176,99 @@ public:
   u_int64_t rcvd_by_closed_bytes;
 
   ConnList *connections;
-  Process(const unsigned long m_inode, const char *m_devicename,
+  };
+  void Process_init(Process *proc,const unsigned long m_inode, const char *m_devicename,
           const char *m_name = NULL, const char *m_cmdline = NULL)
-      : inode(m_inode) {
+       {
     // std::cout << "ARN: Process created with dev " << m_devicename <<
     // std::endl;
-   printf("PROC: Process created at %s  \n",this );
+   printf("PROC: Process created at %s  \n",proc);
   // printf("device name:%s m_name:%d",m_devicename,m_name); 
 
     if (m_name == NULL)
-      name = NULL;
+      proc->name = NULL;
     else
-      name = strdup(m_name);
-    std::cout<<"process name:"<<name;
+      proc->name = strdup(m_name);
+    printf("process name:%s",proc->name);
 
     if (m_cmdline == NULL)
-      cmdline = NULL;
+      proc->cmdline = NULL;
     else
-      cmdline = strdup(m_cmdline);
+      proc->cmdline = strdup(m_cmdline);
 
-    devicename = m_devicename;
-    connections = NULL;
-    pid = 0;
-    uid = 0;
-    sent_by_closed_bytes = 0;
-    rcvd_by_closed_bytes = 0;
+    proc->devicename = m_devicename;
+    proc->connections = NULL;
+    proc->pid = 0;
+    proc->uid = 0;
+    proc->sent_by_closed_bytes = 0;
+    proc->rcvd_by_closed_bytes = 0;
   }
   //void check() { assert(pid >= 0); }
 
-  ~Process() {
-    free(name);
-    free(cmdline);
-    //if (DEBUG)
-      //std::cout << "PROC: Process deleted at " << this << std::endl;
-  }
   
-  int getLastPacket(){
+  
+  int getLastPacket(Process *proc){
   	int lastpacket = 0;
-  ConnList *curconn = connections;
+  ConnList *curconn = proc->connections;
   while (curconn != NULL) {
     assert(curconn != NULL);
-    assert(curconn->getVal() != NULL);
-    if (curconn->getVal()->getLastPacket() > lastpacket)
-      lastpacket = curconn->getVal()->getLastPacket();
-    curconn = curconn->getNext();
+    assert(ConnListgetVal(curconn) != NULL);
+    if (getLastPacket(ConnListgetVal(curconn)) > lastpacket)
+      lastpacket = getLastPacket(ConnListgetVal(curconn));
+    curconn = getNext(curconn);
   }
   return lastpacket;
   }
 
-  void gettotal(u_int64_t *recvd, u_int64_t *sent){
+  void Process_gettotal(Process *proc, u_int64_t *recvd, u_int64_t *sent){
   u_int64_t sum_sent = 0, sum_recv = 0;
-  ConnList *curconn = this->connections;
+  ConnList *curconn = proc->connections;
   while (curconn != NULL) {
-    Connection *conn = curconn->getVal();
+    Connection *conn = ConnListgetVal(curconn);
     sum_sent += conn->sumSent;
     sum_recv += conn->sumRecv;
-    curconn = curconn->getNext();
+    curconn = getNext(curconn);
   }
   printf("Sum sent: %d",sum_sent);
   printf("Sum recv: %d",sum_recv);
   // std::cout << "Sum recv: " << sum_recv << std::endl;
-  *recvd = sum_recv + this->rcvd_by_closed_bytes;
-  *sent = sum_sent + this->sent_by_closed_bytes;
+  *recvd = sum_recv + proc->rcvd_by_closed_bytes;
+  *sent = sum_sent + proc->sent_by_closed_bytes;
 }
 
-timeval curtime;
+
 float tokb(u_int64_t bytes) { return ((double)bytes) / 1024; }
 float tokbps(u_int64_t bytes) { return (((double)bytes) / PERIOD) / 1024; }
 
-  void getkbps(float *recvd, float *sent){
+  void getkbps(Process *proc,float *recvd, float *sent){
   u_int64_t sum_sent = 0, sum_recv = 0;
 
   /* walk though all this process's connections, and sum
    * them up */
-  ConnList *curconn = this->connections;
+  ConnList *curconn = proc->connections;
   ConnList *previous = NULL;
   while (curconn != NULL) {
-    if (curconn->getVal()->getLastPacket() <= curtime.tv_sec - CONNTIMEOUT) {
+    if (getLastPacket(ConnListgetVal(curconn)) <= curtime.tv_sec - CONNTIMEOUT) {
       /* capture sent and received totals before deleting */
-      this->sent_by_closed_bytes += curconn->getVal()->sumSent;
-      this->rcvd_by_closed_bytes += curconn->getVal()->sumRecv;
+      proc->sent_by_closed_bytes += ConnListgetVal(curconn)->sumSent;
+      proc->rcvd_by_closed_bytes += ConnListgetVal(curconn)->sumRecv;
       /* stalled connection, remove. */
       ConnList *todelete = curconn;
-      Connection *conn_todelete = curconn->getVal();
-      curconn = curconn->getNext();
-      if (todelete == this->connections)
-        this->connections = curconn;
+      Connection *conn_todelete = ConnListgetVal(curconn);
+      curconn = getNext(curconn);
+      if (todelete == proc->connections)
+        proc->connections = curconn;
       if (previous != NULL)
-        previous->setNext(curconn);
+        setNext(previous,curconn);
       delete (todelete);
       delete (conn_todelete);
     } else {
       u_int64_t sent = 0, recv = 0;
-      curconn->getVal()->sumanddel(curtime, &recv, &sent);
+      Connection_sumanddel(ConnListgetVal(curconn),curtime, &recv, &sent);
       sum_sent += sent;
       sum_recv += recv;
       previous = curconn;
-      curconn = curconn->getNext();
+      curconn = getNext(curconn);
     }
   }
   *recvd = tokbps(sum_recv);
@@ -293,12 +284,12 @@ float tokbps(u_int64_t bytes) { return (((double)bytes) / PERIOD) / 1024; }
   *sent = tomb(sum_sent);
 }*/
   //void gettotalkb(float *recvd, float *sent);
-void gettotalkb(float *recvd, float *sent) {
+/*void gettotalkb(float *recvd, float *sent) {
   u_int64_t sum_sent = 0, sum_recv = 0;
   gettotal(&sum_recv, &sum_sent);
   *recvd = tokb(sum_recv);
   *sent = tokb(sum_sent);
-}
+}*/
 
   /*void gettotalb(float *recvd, float *sent) {
   u_int64_t sum_sent = 0, sum_recv = 0;
@@ -309,37 +300,38 @@ void gettotalkb(float *recvd, float *sent) {
 }
 
  */
-  uid_t getUid() { return uid; }
+  uid_t getUid(Process *proc) { return proc->uid; }
 
-  void setUid(uid_t m_uid) { uid = m_uid; }
+  void setUid(Process *proc,uid_t m_uid) { proc->uid = m_uid; }
 
-  unsigned long getInode() { return inode; }
+  unsigned long getInode(Process *proc) { return proc->inode; }
 
 
+
+typedef struct _ProcList ProcList;
+struct _ProcList {
+ Process *val;
+ ProcList *next;
 };
-
-class ProcList {
-public:
-  ProcList(Process *m_val, ProcList *m_next) {
+  void ProcList_init(ProcList *plist,Process *m_val, ProcList *m_next) {
     assert(m_val != NULL);
-    val = m_val;
-    next = m_next;
+    plist->val = m_val;
+    plist->next = m_next;
   }
-  int size(){
+  int size(ProcList *plist){
   int i = 1;
 
-  if (next != NULL)
-    i += next->size();
+  if (plist->next != NULL)
+    i += size(plist->next);
 
   return i;
 }
-  Process *getVal() { return val; }
-  ProcList *getNext() { return next; }
-  ProcList *next;
+  Process *ProcListgetVal(ProcList *plist) { return plist->val; }
+  ProcList *getNext(ProcList *plist) { return plist->next; }
+  
+ 
 
-private:
-  Process *val;
-};
+
 Process *unknowntcp;
 Process *unknownudp;
 Process *unknownip;
@@ -370,11 +362,11 @@ struct prg_node *findPID(unsigned long inode) {
 Process *findProcess(struct prg_node *node) {
   ProcList *current = processes;
   while (current != NULL) {
-    Process *currentproc = current->getVal();
+    Process *currentproc = ProcListgetVal(current);
     assert(currentproc != NULL);
 
     if (node->pid == currentproc->pid)
-      return current->getVal();
+      return ProcListgetVal(current);
     current = current->next;
   }
   return NULL;
@@ -405,7 +397,8 @@ Process *getProcess(unsigned long inode, const char *devicename) {
   const char *prgname = node->cmdline.c_str();
   const char *cmdline = prgname + strlen(prgname) + 1;
 
-  Process *newproc = new Process(inode, devicename, prgname, cmdline);
+  Process *newproc = (Process *)malloc(sizeof(Process));
+   Process_init(newproc,inode, devicename, prgname, cmdline);
   newproc->pid = node->pid;
 
   char procdir[100];
@@ -426,22 +419,22 @@ Process *getProcess(unsigned long inode, const char *devicename) {
   */
 
   if (retval != 0)
-    newproc->setUid(0);
+    setUid(newproc,0);
   else
-    newproc->setUid(stats.st_uid);
+    setUid(newproc,stats.st_uid);
 
   /*if (getpwuid(stats.st_uid) == NULL) {
           std::stderr << "uid for inode
           if (!ROBUST)
                   assert(false);
   }*/
-  processes = new ProcList(newproc, processes);
+  ProcList_init(processes,newproc, processes);
   return newproc;
 }
 
 
 Process *getProcess(Connection *connection, const char *devicename) {
-  unsigned long inode = conninode[connection->refpacket->gethashstring()];
+  unsigned long inode = conninode[gethashstring(connection->refpacket)];
 
   if (inode == 0) {
       /* HACK: the following is a hack for cases where the
@@ -450,14 +443,13 @@ Process *getProcess(Connection *connection, const char *devicename) {
 
       /* we reverse the direction of the stream if
        * successful. */
-      Packet *reversepacket = connection->refpacket->newInverted();
-      inode = conninode[reversepacket->gethashstring()];
+      Packet *reversepacket = newInverted(connection->refpacket);
+      inode = conninode[gethashstring(reversepacket)];
 
       if (inode == 0) {
         delete reversepacket;
         
-        unknowntcp->connections =
-            new ConnList(connection, unknowntcp->connections);
+         ConnList_init(unknowntcp->connections,connection, unknowntcp->connections);
         return unknowntcp;
       }
 
@@ -473,11 +465,11 @@ Process *getProcess(Connection *connection, const char *devicename) {
     proc = getProcess(inode, devicename);
 
   if (proc == NULL) {
-    proc = new Process(inode, "", connection->refpacket->gethashstring());
-    processes = new ProcList(proc, processes);
+    Process_init(proc,inode, "", gethashstring(connection->refpacket));
+    ProcList_init( processes,proc, processes);
   }
 
-  proc->connections = new ConnList(connection, proc->connections);
+   ConnList_init(proc->connections,connection, proc->connections);
   return proc;
 }
 
@@ -485,10 +477,10 @@ Process *getProcess(Connection *connection, const char *devicename) {
 
 
 void process_init() {
-  unknowntcp = new Process(0, "", "unknown TCP");
+    Process_init(unknowntcp,0, "", "unknown TCP");
   // unknownudp = new Process (0, "", "unknown UDP");
   // unknownip = new Process (0, "", "unknown IP");
-  processes = new ProcList(unknowntcp, NULL);
+   ProcList_init(processes,unknowntcp, NULL);
   // processes = new ProcList (unknownudp, processes);
   // processes = new ProcList (unknownip, processes);
 }
@@ -504,16 +496,17 @@ void remove_timed_out_processes();
 **Fetching DEVICES
 ***/
 
+typedef struct _device device;
+struct _device {
 
-class device {
-public:
-  device(const char *m_name, device *m_next = NULL) {
-    name = m_name;
-    next = m_next;
-  }
+ 
   const char *name;
   device *next;
 };
+ void device_init(device *dev,const char *m_name, device *m_next = NULL) {
+    dev->name = m_name;
+    dev->next = m_next;
+  }
 
 
 
@@ -554,7 +547,7 @@ device *get_devices() {
   	{	 const char * name=strdup(ifa->ifa_name);
   	if ( search(name,devices))
   		continue;}
-        devices = new device(strdup(ifa->ifa_name), devices);
+         device_init(devices,strdup(ifa->ifa_name), devices);
 
         
   }
@@ -685,7 +678,7 @@ int process_tcp(u_char *userdata, const dp_header *header,
   switch (args->sa_family) {
   case AF_INET:
 
-    packet = new Packet(args->ip_src, ntohs(tcp->th_sport), args->ip_dst,
+    Packet_init(packet,args->ip_src, ntohs(tcp->th_sport), args->ip_dst,
                         ntohs(tcp->th_dport), header->len, header->ts);
 
 //    packet = new Packet(args->ip_src, ntohs(tcp->source), args->ip_dst,
@@ -694,7 +687,7 @@ int process_tcp(u_char *userdata, const dp_header *header,
     break;
   case AF_INET6:
  
-    packet = new Packet(args->ip6_src, ntohs(tcp->th_sport), args->ip6_dst,
+    Packet_init(packet,args->ip6_src, ntohs(tcp->th_sport), args->ip6_dst,
                         ntohs(tcp->th_dport), header->len, header->ts);
 /*
     packet = new Packet(args->ip6_src, ntohs(tcp->source), args->ip6_dst,
@@ -710,10 +703,10 @@ int process_tcp(u_char *userdata, const dp_header *header,
 
   if (connection != NULL) {
     /* add packet to the connection */
-    connection->add(packet);
+    addConnection(connection,packet);
   } else {
     /* else: unknown connection, create new */
-    connection = new Connection(packet);
+     Connection_init(connection,packet);
     getProcess(connection, args->device);
   }
   delete packet;
@@ -887,19 +880,21 @@ int dp_dispatch(struct dp_handle *handle, int count, u_char *user, int size) {
 /**
 *handle to store handles for different devices
 **/
-
-class handle {
-public:
-  handle(dp_handle *m_handle, const char *m_devicename = NULL,
-         handle *m_next = NULL) {
-    content = m_handle;
-    next = m_next;
-    devicename = m_devicename;
-  }
-  dp_handle *content;
+typedef struct _handle handle;
+struct _handle {
+    dp_handle *content;
   const char *devicename;
   handle *next;
+
+  
+
 };
+void handle_init(handle *hdl,dp_handle *m_handle, const char *m_devicename = NULL,
+         handle *m_next = NULL) {
+    hdl->content = m_handle;
+    hdl->next = m_next;
+    hdl->devicename = m_devicename;
+  }
 
 void printHandles(handle *handles){
 	for(handle * temp=handles;temp !=NULL;temp=temp->next){
@@ -911,41 +906,41 @@ void printHandles(handle *handles){
 /**
 ***Connection hash tables after reading from proc file
 ***/
+typedef struct _local_addr local_addr;
+struct _local_addr{
 
-class local_addr{
-private:
 	in_addr_t addr;
 	struct in6_addr addr6;
 	short int sa_family;
-public:
+
 	char *string;
 	local_addr *next;
-	local_addr(in_addr_t m_addr,local_addr *mnext=NULL){
-		addr=m_addr;
-		next=mnext;
-		sa_family=AF_INET6;
-		string=(char *)malloc(16);
-		inet_ntop(AF_INET6,&m_addr,string,15);
+	
 
-	}
-	local_addr(struct in6_addr *m_addr, local_addr *m_next = NULL) {
-    addr6 = *m_addr;
-    next = m_next;
-    sa_family = AF_INET6;
-    string = (char *)malloc(64);
-    inet_ntop(AF_INET6, &m_addr, string, 63);
-  }
-
-bool contains(const struct in6_addr &n_addr);
-bool contains(const in_addr_t &n_addr);
+//bool contains(const struct in6_addr &n_addr);
+//bool contains(const in_addr_t &n_addr);
 
 };
 
+void local_addr_init(local_addr *laddr,in_addr_t m_addr,local_addr *mnext=NULL){
+    laddr->addr=m_addr;
+    laddr->next=mnext;
+    laddr->sa_family=AF_INET6;
+    laddr->string=(char *)malloc(16);
+    inet_ntop(AF_INET6,&m_addr,laddr->string,15);
+
+  }
+void local_addr_init(local_addr *laddr,struct in6_addr *m_addr, local_addr *m_next = NULL) {
+    laddr->addr6 = *m_addr;
+    laddr->next = m_next;
+    laddr->sa_family = AF_INET6;
+    laddr->string = (char *)malloc(64);
+    inet_ntop(AF_INET6, &m_addr, laddr->string, 63);
+  }
 
 
-
-bool local_addr::contains(const struct in6_addr &n_addr) {
-  if (sa_family == AF_INET6) {
+bool local_addr_contains(local_addr *laddr,const struct in6_addr &n_addr) {
+  if (laddr->sa_family == AF_INET6) {
     /*
     if (DEBUG) {
             char addy [50];
@@ -957,22 +952,22 @@ bool local_addr::contains(const struct in6_addr &n_addr) {
     }
     */
     // if (addr6.s6_addr == n_addr.s6_addr)
-    if (memcmp(&addr6, &n_addr, sizeof(struct in6_addr)) == 0) {
+    if (memcmp(&(laddr->addr6), &n_addr, sizeof(struct in6_addr)) == 0) {
       
       return true;
     }
   }
-  if (next == NULL)
+  if (laddr->next == NULL)
     return false;
-  return next->contains(n_addr);
+  return local_addr_contains(laddr->next,n_addr);
 }
 
-bool local_addr::contains(const in_addr_t &n_addr) {
-  if ((sa_family == AF_INET) && (n_addr == addr))
+bool local_addr_contains(local_addr *laddr,const in_addr_t &n_addr) {
+  if ((laddr->sa_family == AF_INET) && (n_addr ==laddr->addr))
     return true;
-  if (next == NULL)
+  if (laddr->next == NULL)
     return false;
-  return next->contains(n_addr);
+  return local_addr_contains(laddr->next,n_addr);
 }
 
 //packet
@@ -1031,32 +1026,32 @@ struct tcp_hdr {
   u_short th_sum; /* checksum */
   u_short th_urp; /* urgent pointer */
 };
-Packet::Packet(in_addr m_sip, unsigned short m_sport, in_addr m_dip,
+void Packet_init(Packet *pk,in_addr m_sip, unsigned short m_sport, in_addr m_dip,
                unsigned short m_dport, u_int32_t m_len, timeval m_time,
                direction m_dir) {
-  sip = m_sip;
-  sport = m_sport;
-  dip = m_dip;
-  dport = m_dport;
-  len = m_len;
-  time = m_time;
-  dir = m_dir;
-  sa_family = AF_INET;
-  hashstring = NULL;
+  pk->sip = m_sip;
+  pk->sport = m_sport;
+  pk->dip = m_dip;
+  pk->dport = m_dport;
+  pk->len = m_len;
+  pk->time = m_time;
+  pk->dir = m_dir;
+  pk->sa_family = AF_INET;
+  pk->hashstring = NULL;
 }
 
-Packet::Packet(in6_addr m_sip, unsigned short m_sport, in6_addr m_dip,
+void Packet_init(Packet *pk,in6_addr m_sip, unsigned short m_sport, in6_addr m_dip,
                unsigned short m_dport, u_int32_t m_len, timeval m_time,
                direction m_dir) {
-  sip6 = m_sip;
-  sport = m_sport;
-  dip6 = m_dip;
-  dport = m_dport;
-  len = m_len;
-  time = m_time;
-  dir = m_dir;
-  sa_family = AF_INET6;
-  hashstring = NULL;
+  pk->sip6 = m_sip;
+  pk->sport = m_sport;
+  pk->dip6 = m_dip;
+  pk->dport = m_dport;
+  pk->len = m_len;
+  pk->time = m_time;
+  pk->dir = m_dir;
+  pk->sa_family = AF_INET6;
+  pk->hashstring = NULL;
 }
 
 direction invert(direction dir) {
@@ -1068,32 +1063,40 @@ direction invert(direction dir) {
     return dir_unknown;
 }
 
-Packet *Packet::newInverted() {
-  direction new_direction = invert(dir);
+Packet * newInverted(Packet *pk) {
+  direction new_direction = invert(pk->dir);
 
-  if (sa_family == AF_INET)
-    return new Packet(dip, dport, sip, sport, len, time, new_direction);
-  else
-    return new Packet(dip6, dport, sip6, sport, len, time, new_direction);
+  if (pk->sa_family == AF_INET)
+  {Packet *temp=(Packet *)malloc(sizeof(Packet));
+   Packet_init(temp,pk->dip, pk->dport,pk->sip, pk->sport, pk->len, pk->time, new_direction);
+    
+    return temp;
+  }
+  
+    Packet *temp=(Packet *)malloc(sizeof(Packet));
+    Packet_init(temp,pk->dip6, pk->dport, pk->sip6, pk->sport, pk->len, pk->time, new_direction);
+    return temp;
+  
+   
 }
 
 /* constructs returns a new Packet() structure with the same contents as this
  * one */
-Packet::Packet(const Packet &old_packet) {
-  sip = old_packet.sip;
-  sport = old_packet.sport;
-  sip6 = old_packet.sip6;
-  dip6 = old_packet.dip6;
-  dip = old_packet.dip;
-  dport = old_packet.dport;
-  len = old_packet.len;
-  time = old_packet.time;
-  sa_family = old_packet.sa_family;
+void Packet_init(Packet *pk,const Packet &old_packet) {
+  pk->sip = old_packet.sip;
+  pk->sport = old_packet.sport;
+  pk->sip6 = old_packet.sip6;
+  pk->dip6 = old_packet.dip6;
+  pk->dip = old_packet.dip;
+  pk->dport = old_packet.dport;
+  pk->len = old_packet.len;
+  pk->time = old_packet.time;
+  pk->sa_family = old_packet.sa_family;
   if (old_packet.hashstring == NULL)
-    hashstring = NULL;
+    pk->hashstring = NULL;
   else
-    hashstring = strdup(old_packet.hashstring);
-  dir = old_packet.dir;
+    pk->hashstring = strdup(old_packet.hashstring);
+  pk->dir = old_packet.dir;
 }
 
 bool sameinaddr(in_addr one, in_addr other) {
@@ -1104,16 +1107,16 @@ bool samein6addr(in6_addr one, in6_addr other) {
   return std::equal(one.s6_addr, one.s6_addr + 16, other.s6_addr);
 }
 
-bool Packet::isOlderThan(timeval t) {
-  std::cout << "Comparing " << time.tv_sec << " <= " << t.tv_sec << std::endl;
-  return (time.tv_sec <= t.tv_sec);
+bool Packet_isOlderThan(Packet *pk,timeval t) {
+  //std::cout << "Comparing " << pk->time.tv_sec << " <= " << t.tv_sec << std::endl;
+  return (pk->time.tv_sec <= t.tv_sec);
 }
 
-bool Packet::Outgoing() {
+bool Outgoing(Packet *pk) {
   /* must be initialised with getLocal("eth0:1");) */
   assert(local_addrs != NULL);
 
-  switch (dir) {
+  switch (pk->dir) {
   case dir_outgoing:
     return true;
   case dir_incoming:
@@ -1121,32 +1124,32 @@ bool Packet::Outgoing() {
   case dir_unknown:
   printf("unknown dir\n");
     bool islocal;
-    if (sa_family == AF_INET)
-      islocal = local_addrs->contains(sip.s_addr);
+    if (pk->sa_family == AF_INET)
+      islocal = local_addr_contains(local_addrs,pk->sip.s_addr);
     else
-      islocal = local_addrs->contains(sip6);
+      islocal = local_addr_contains(local_addrs,pk->sip6);
     if (islocal) {
-      dir = dir_outgoing;
+      pk->dir = dir_outgoing;
       return true;
     } else {
      {
-        if (sa_family == AF_INET)
-          islocal = local_addrs->contains(dip.s_addr);
+        if (pk->sa_family == AF_INET)
+          islocal = local_addr_contains(local_addrs,pk->dip.s_addr);
         else
-          islocal = local_addrs->contains(dip6);
+          islocal = local_addr_contains(local_addrs,pk->dip6);
 
         if (!islocal) {
           std::cerr << "Neither dip nor sip are local: ";
           char addy[50];
-          inet_ntop(AF_INET6, &sip6, addy, 49);
+          inet_ntop(AF_INET6, &(pk->sip6), addy, 49);
           std::cerr << addy << std::endl;
-          inet_ntop(AF_INET6, &dip6, addy, 49);
+          inet_ntop(AF_INET6, &(pk->dip6), addy, 49);
           std::cerr << addy << std::endl;
 
           return false;
         }
       }
-      dir = dir_incoming;
+      pk->dir = dir_incoming;
       return false;
     }
   }
@@ -1156,51 +1159,51 @@ bool Packet::Outgoing() {
 /* returns the packet in '1.2.3.4:5-1.2.3.4:5'-form, for use in the 'conninode'
  * table */
 /* '1.2.3.4' should be the local address. */
-char *Packet::gethashstring() {
-  if (hashstring != NULL) {
-    return hashstring;
+char * gethashstring(Packet *pk) {
+  if (pk->hashstring != NULL) {
+    return pk->hashstring;
   }
 
   // TODO free this value in the Packet destructor
-  hashstring = (char *)malloc(HASHKEYSIZE * sizeof(char));
+  pk->hashstring = (char *)malloc(HASHKEYSIZE * sizeof(char));
 
   char *local_string = (char *)malloc(50);
   char *remote_string = (char *)malloc(50);
-  if (sa_family == AF_INET) {
-    inet_ntop(sa_family, &sip, local_string, 49);
-    inet_ntop(sa_family, &dip, remote_string, 49);
+  if (pk->sa_family == AF_INET) {
+    inet_ntop(pk->sa_family, &(pk->sip), local_string, 49);
+    inet_ntop(pk->sa_family, &(pk->dip), remote_string, 49);
   } else {
-    inet_ntop(sa_family, &sip6, local_string, 49);
-    inet_ntop(sa_family, &dip6, remote_string, 49);
+    inet_ntop(pk->sa_family, &(pk->sip6), local_string, 49);
+    inet_ntop(pk->sa_family, &(pk->dip6), remote_string, 49);
   }
-  if (Outgoing()) {
-    snprintf(hashstring, HASHKEYSIZE * sizeof(char), "%s:%d-%s:%d",
-             local_string, sport, remote_string, dport);
+  if (Outgoing(pk)) {
+    snprintf(pk->hashstring, HASHKEYSIZE * sizeof(char), "%s:%d-%s:%d",
+             local_string, pk->sport, remote_string, pk->dport);
   } else {
-    snprintf(hashstring, HASHKEYSIZE * sizeof(char), "%s:%d-%s:%d",
-             remote_string, dport, local_string, sport);
+    snprintf(pk->hashstring, HASHKEYSIZE * sizeof(char), "%s:%d-%s:%d",
+             remote_string, pk->dport, local_string, pk->sport);
   }
   free(local_string);
   free(remote_string);
   // if (DEBUG)
   //	std::cout << "Returning newly created hash string: " << hashstring <<
   // std::endl;
-  return hashstring;
+  return pk->hashstring;
 }
 
 /* 2 packets match if they have the same
  * source and destination ports and IP's. */
-bool Packet::match(Packet *other) {
-  return sa_family == other->sa_family && (sport == other->sport) &&
-         (dport == other->dport) &&
-         (sa_family == AF_INET
-              ? (sameinaddr(sip, other->sip)) && (sameinaddr(dip, other->dip))
-              : (samein6addr(sip6, other->sip6)) &&
-                    (samein6addr(dip6, other->dip6)));
+bool Packet_match(Packet *pk,Packet *other) {
+  return pk->sa_family == other->sa_family && (pk->sport == other->sport) &&
+         (pk->dport == other->dport) &&
+         (pk->sa_family == AF_INET
+              ? (sameinaddr(pk->sip, other->sip)) && (sameinaddr(pk->dip, other->dip))
+              : (samein6addr(pk->sip6, other->sip6)) &&
+                    (samein6addr(pk->dip6, other->dip6)));
 }
 
-bool Packet::matchSource(Packet *other) {
-  return (sport == other->sport) && (sameinaddr(sip, other->sip));
+bool Packet_matchSource(Packet *pk,Packet *other) {
+  return (pk->sport == other->sport) && (sameinaddr(pk->sip, other->sip));
 }
 
 
@@ -1365,14 +1368,14 @@ bool getLocal(const char *device) {
 
     if (family == AF_INET) {
       struct sockaddr_in *addr = (struct sockaddr_in *)ifa->ifa_addr;
-       local_addrs = new local_addr(addr->sin_addr.s_addr, local_addrs);
+       local_addr_init(local_addrs,addr->sin_addr.s_addr, local_addrs);
 
      
         printf("Adding local address: %s\n", inet_ntoa(addr->sin_addr));
       
     } else if (family == AF_INET6) {
       struct sockaddr_in6 *addr = (struct sockaddr_in6 *)ifa->ifa_addr;
-     local_addrs = new local_addr(&addr->sin6_addr, local_addrs);
+     local_addr_init(local_addrs,&addr->sin6_addr, local_addrs);
       //DEBUG
         char host[512];
         printf("Adding local address: %s\n",
@@ -1399,7 +1402,7 @@ void do_refresh() {
   }*/
 
   ProcList *curproc = processes;
-  int nproc = processes->size();
+  int nproc = size(processes);
 
   /* initialize to null pointers */
   Line *lines[nproc];
@@ -1412,13 +1415,13 @@ void do_refresh() {
     // walk though its connections, summing up their data, and
     // throwing away connections that haven't received a package
     // in the last CONNTIMEOUT seconds.
-    assert(curproc->getVal() != NULL);
-    assert(nproc == processes->size());
+    assert(ProcListgetVal(curproc) != NULL);
+    assert(nproc == size(processes));
 
     float value_sent = 0, value_recv = 0;
 
     //if (viewMode == VIEWMODE_KBPS) {
-      curproc->getVal()->getkbps(&value_recv, &value_sent);
+      getkbps(ProcListgetVal(curproc),&value_recv, &value_sent);
     /*} else if (viewMode == VIEWMODE_TOTAL_KB) {
       curproc->getVal()->gettotalkb(&value_recv, &value_sent);
     } else if (viewMode == VIEWMODE_TOTAL_MB) {
@@ -1428,14 +1431,14 @@ void do_refresh() {
     } else {
       forceExit(false, "Invalid viewMode: %d", viewMode);
     }*/
-    uid_t uid = curproc->getVal()->getUid();
-    assert(curproc->getVal()->pid >= 0);
+    uid_t uid = getUid(ProcListgetVal(curproc));
+    assert(ProcListgetVal(curproc)->pid >= 0);
     assert(n < nproc);
-    printf("%s proc name %d\n",curproc->getVal()->name,n);
+    printf("%s proc name %d\n",ProcListgetVal(curproc)->name,n);
 
-    lines[n] = new Line(curproc->getVal()->name, curproc->getVal()->cmdline,
-                        value_recv, value_sent, curproc->getVal()->pid, uid,
-                        curproc->getVal()->devicename);
+    Line_init(lines[n],ProcListgetVal(curproc)->name, ProcListgetVal(curproc)->cmdline,
+                        value_recv, value_sent, ProcListgetVal(curproc)->pid, uid,
+                        ProcListgetVal(curproc)->devicename);
     curproc = curproc->next;
     n++;
   }
@@ -1492,7 +1495,7 @@ int main(int argc, char ** argv){
   }
   if(newhandle !=NULL)
   printf("1480::::%s:%d\n",current_dev->name,newhandle->userdata_size);
-  handles = new handle(newhandle, current_dev->name, handles);
+   handle_init(handles,newhandle, current_dev->name, handles);
   current_dev=current_dev->next;
 
 }
