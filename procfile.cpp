@@ -85,12 +85,12 @@ void log(Line *ln) {
   printf("m_pid :%d \t m_uid:%d \tsent_value:%f \trecv value:%f \tname of process:%s \n",ln->m_pid,ln->m_uid,ln->sent_value,ln->recv_value ,ln->m_name);
 }
 
-void show_trace(Line *lines[], int nproc) {
+void show_trace(Line *lines, int nproc) {
   
   /* print them */
   for (int i = 0; i < nproc; i++) {
-    log(lines[i]);
-    delete lines[i];
+    log(&lines[i]);
+   // delete lines[i];
   }
 
   /* print the 'unknown' connections, for debugging */
@@ -332,10 +332,10 @@ struct _ProcList {
  
 
 
-Process *unknowntcp;
-Process *unknownudp;
-Process *unknownip;
-ProcList *processes;
+Process *unknowntcp=(Process *)malloc(sizeof(Process));
+Process *unknownudp=(Process *)malloc(sizeof(Process));
+Process *unknownip=(Process *)malloc(sizeof(Process));
+ProcList *processes=(ProcList *)malloc(sizeof(ProcList));
 struct prg_node {
   long inode;
   pid_t pid;
@@ -532,29 +532,43 @@ bool search(const char *m_name,device *dev){
 }
 
 device *get_devices() {
+  printf("**fetching dev");
   struct ifaddrs *ifaddr, *ifa;
-
+printf("fetching dev");
   if (getifaddrs(&ifaddr) == -1) {
     printf("Failed to get interface addresses\n" );
     // perror("getifaddrs");
     return NULL;
   }
-
-  device *devices = NULL;
+printf("fetching dev");
+  device *nextdevices ;//=(device *)malloc(sizeof(device));
+  device *devices;
+  device *newdevices=(device *)malloc(sizeof(device));
+  devices=newdevices;
+  //= (device *)malloc(sizeof(device));
+  printf("mem alloc dev");
   int count=0;
   for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-  		if((devices)!=NULL)
+  		if(newdevices)
   	{	 const char * name=strdup(ifa->ifa_name);
-  	if ( search(name,devices))
-  		continue;}
-         device_init(devices,strdup(ifa->ifa_name), devices);
-
+  	if ( search(name,newdevices))
+  		continue;
+  } if(count!=0)
+         {newdevices=(device *)malloc(sizeof(device));
+         device_init(newdevices,strdup(ifa->ifa_name), nextdevices);
+       }
+       else if(count==0)
+       {
+         device_init(newdevices,strdup(ifa->ifa_name));
+       }
+         nextdevices=newdevices;
+         count++;
         
   }
   printf("%d",count);
 
   freeifaddrs(ifaddr);
-  return devices;
+  return newdevices;
 }
 /**
 ** Pcap LOOKUP
@@ -674,7 +688,7 @@ int process_tcp(u_char *userdata, const dp_header *header,
   curtime = header->ts;
 
   /* get info from userdata, then call getPacket */
-  Packet *packet;
+  Packet *packet=(Packet *)malloc(sizeof(Packet));
   switch (args->sa_family) {
   case AF_INET:
 
@@ -971,7 +985,7 @@ bool local_addr_contains(local_addr *laddr,const in_addr_t &n_addr) {
 }
 
 //packet
-local_addr *local_addrs = NULL;
+local_addr *local_addrs =(local_addr *)malloc(sizeof(local_addr));
 
 /*
  * getLocal
@@ -1323,6 +1337,7 @@ void printConninode(){
 
 	       printf("%c :%ld\n",(*ii).first,(*ii).second);
 	   }
+     printf("completed");
 
 }
 
@@ -1405,10 +1420,10 @@ void do_refresh() {
   int nproc = size(processes);
 
   /* initialize to null pointers */
-  Line *lines[nproc];
-  for (int i = 0; i < nproc; i++)
+  Line *lines=(Line *)calloc(nproc,sizeof(Line));
+  /*for (int i = 0; i < nproc; i++)
     lines[i] = NULL;
-
+*/
   int n = 0;
 
   while (curproc != NULL) {
@@ -1436,7 +1451,7 @@ void do_refresh() {
     assert(n < nproc);
     printf("%s proc name %d\n",ProcListgetVal(curproc)->name,n);
 
-    Line_init(lines[n],ProcListgetVal(curproc)->name, ProcListgetVal(curproc)->cmdline,
+    Line_init(&lines[n],ProcListgetVal(curproc)->name, ProcListgetVal(curproc)->cmdline,
                         value_recv, value_sent, ProcListgetVal(curproc)->pid, uid,
                         ProcListgetVal(curproc)->devicename);
     curproc = curproc->next;
@@ -1464,7 +1479,7 @@ void do_refresh() {
 
 
 
-static handle *handles = NULL;
+static handle *handles = (handle *)malloc(sizeof(handle));
 
 
 int main(int argc, char ** argv){
@@ -1473,8 +1488,9 @@ int main(int argc, char ** argv){
 	process_init();
 	addprocinfo(fname);
 	printConninode();
-
 	device *devices=get_devices();
+printf("fetched dev");
+
 	printDevices(devices);
 	device *current_dev=devices;
 	int nb_devices=0;
@@ -1495,7 +1511,10 @@ int main(int argc, char ** argv){
   }
   if(newhandle !=NULL)
   printf("1480::::%s:%d\n",current_dev->name,newhandle->userdata_size);
-   handle_init(handles,newhandle, current_dev->name, handles);
+handle *tempHandle=(handle *)malloc(sizeof(handle));
+  
+   handle_init(tempHandle,newhandle, current_dev->name, handles);
+   handles=tempHandle;
   current_dev=current_dev->next;
 
 }
