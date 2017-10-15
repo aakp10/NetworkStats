@@ -27,7 +27,22 @@ int promisc =1;
 
 char errbuf[PCAP_ERRBUF_SIZE];
 using namespace std;
-std::map<std::string, unsigned long> conninode;
+//std::map<std::string, unsigned long> conninode;
+typedef struct _ConnInode ConnInode;
+struct _ConnInode{
+  char *hashkey;
+  unsigned long inode;
+  ConnInode *next;
+};
+void ConnInode_init(ConnInode *cinode,char *key,unsigned long &val,ConnInode *m_next=NULL){
+  cinode->hashkey=key;
+  cinode->inode=val;
+  cinode->next=m_next;
+}
+ConnInode *conninode=NULL;
+
+
+
 static time_t last_refresh_time = 0;
 time_t refreshdelay = 1;
 timeval curtime;
@@ -90,7 +105,7 @@ void show_trace(Line *lines, int nproc) {
   /* print them */
   for (int i = 0; i < nproc; i++) {
     log(&lines[i]);
-    free(lines[i]);
+    //free(lines[i]);
   }
 
   /* print the 'unknown' connections, for debugging */
@@ -434,10 +449,22 @@ Process *getProcess(unsigned long inode, const char *devicename) {
   //ProcList_init(processes,newproc, processes);
   return newproc;
 }
+unsigned long  conninode_gethashstring(char *hashstring){
+  ConnInode *ci=conninode;
+  while(ci !=NULL){
+    if(strcmp(ci->hashkey,hashstring)==0)
+    {
+      return ci->inode;
+    }
+    ci=ci->next;
+
+  }
+  return 0;
+}
 
 
 Process *getProcess(Connection *connection, const char *devicename) {
-  unsigned long inode = conninode[gethashstring(connection->refpacket)];
+  unsigned long inode = conninode_gethashstring(gethashstring(connection->refpacket));
 
   if (inode == 0) {
       /* HACK: the following is a hack for cases where the
@@ -447,7 +474,7 @@ Process *getProcess(Connection *connection, const char *devicename) {
       /* we reverse the direction of the stream if
        * successful. */
       Packet *reversepacket = newInverted(connection->refpacket);
-      inode = conninode[gethashstring(reversepacket)];
+      inode = conninode_gethashstring(gethashstring(reversepacket));
 
       if (inode == 0) {
         free(reversepacket);
@@ -1334,7 +1361,10 @@ void addtoconninode(char *buffer) {
            local_port, remote_string, rem_port);
   free(local_string);
   printf("%s hashkey", hashkey);
-  conninode[hashkey] = inode;
+  ConnInode *tempInode=(ConnInode *)malloc(sizeof(ConnInode));
+  ConnInode_init(tempInode,hashkey,inode,conninode);
+  conninode=tempInode;
+ // conninode[hashkey] = inode;
   printf("inode%d\n",inode);
 
 
@@ -1342,12 +1372,14 @@ void addtoconninode(char *buffer) {
 
 }
 void printConninode(){
-	printf("size%d",conninode.size());
-	for( map<std::string,unsigned long>::iterator ii=conninode.begin(); ii!=conninode.end(); ++ii)
+//	printf("size%d",conninode.size());
+	ConnInode *ci=conninode;
+  while(ci !=NULL)
 
 	   {
 
-	       printf("%c :%ld\n",(*ii).first,(*ii).second);
+	       printf("%c :%ld\n",ci->hashkey,ci->inode);
+         ci=ci->next;
 	   }
      printf("completed");
 
@@ -1374,7 +1406,7 @@ printf("opening \n");
 
   return 1;
 }
-/**
+/**F
 *ADDING IP TO THE DEVICE
 **/
 bool getLocal(const char *device) {
