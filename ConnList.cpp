@@ -2,7 +2,7 @@
 #include "ConnList.h"
 
 void ConnList_init(ConnList *clist,Connection *m_val, ConnList *m_next) {
-    assert(m_val != NULL);
+    //assert(m_val != NULL);
    clist->val = m_val;
     clist->next = m_next;
   }

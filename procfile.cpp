@@ -197,7 +197,7 @@ struct _Process {
       proc->cmdline = strdup(m_cmdline);
 
     proc->devicename = m_devicename;
-    proc->connections = NULL;
+    proc->connections=(ConnList *)malloc(sizeof(ConnList)) ;
     proc->pid = 0;
     proc->uid = 0;
     proc->sent_by_closed_bytes = 0;
@@ -460,7 +460,7 @@ Process *getProcess(Connection *connection, const char *devicename) {
   
 
   
-  Process *proc = NULL;
+  Process *proc = (Process *)malloc(sizeof(Process));
   if (inode != 0)
     proc = getProcess(inode, devicename);
 
@@ -719,7 +719,7 @@ int process_tcp(u_char *userdata, const dp_header *header,
     /* add packet to the connection */
     addConnection(connection,packet);
   } else {
-    /* else: unknown connection, create new */
+    Connection * connection=(Connection *)malloc(sizeof(Connection));    /* else: unknown connection, create new */
      Connection_init(connection,packet);
     getProcess(connection, args->device);
   }
@@ -985,7 +985,7 @@ bool local_addr_contains(local_addr *laddr,const in_addr_t &n_addr) {
 }
 
 //packet
-local_addr *local_addrs =(local_addr *)malloc(sizeof(local_addr));
+local_addr *local_addrs =NULL;//(local_addr *)malloc(sizeof(local_addr));
 
 /*
  * getLocal
@@ -1383,14 +1383,17 @@ bool getLocal(const char *device) {
 
     if (family == AF_INET) {
       struct sockaddr_in *addr = (struct sockaddr_in *)ifa->ifa_addr;
-       local_addr_init(local_addrs,addr->sin_addr.s_addr, local_addrs);
-
+   local_addr *temp=(local_addr *)malloc(sizeof(local_addr));
+       local_addr_init(temp,addr->sin_addr.s_addr, local_addrs);
+ local_addrs=temp;
      
         printf("Adding local address: %s\n", inet_ntoa(addr->sin_addr));
       
     } else if (family == AF_INET6) {
       struct sockaddr_in6 *addr = (struct sockaddr_in6 *)ifa->ifa_addr;
-     local_addr_init(local_addrs,&addr->sin6_addr, local_addrs);
+    local_addr *temp=(local_addr *)malloc(sizeof(local_addr));
+     local_addr_init(temp,&addr->sin6_addr, local_addrs);
+     local_addrs=temp;
       //DEBUG
         char host[512];
         printf("Adding local address: %s\n",
