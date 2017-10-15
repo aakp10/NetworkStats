@@ -90,7 +90,7 @@ void show_trace(Line *lines, int nproc) {
   /* print them */
   for (int i = 0; i < nproc; i++) {
     log(&lines[i]);
-   // delete lines[i];
+    free(lines[i]);
   }
 
   /* print the 'unknown' connections, for debugging */
@@ -197,7 +197,7 @@ struct _Process {
       proc->cmdline = strdup(m_cmdline);
 
     proc->devicename = m_devicename;
-    proc->connections=(ConnList *)malloc(sizeof(ConnList)) ;
+    proc->connections=NULL;//(ConnList *)malloc(sizeof(ConnList)) ;
     proc->pid = 0;
     proc->uid = 0;
     proc->sent_by_closed_bytes = 0;
@@ -260,8 +260,8 @@ float tokbps(u_int64_t bytes) { return (((double)bytes) / PERIOD) / 1024; }
         proc->connections = curconn;
       if (previous != NULL)
         setNext(previous,curconn);
-      delete (todelete);
-      delete (conn_todelete);
+      free (todelete);
+      free (conn_todelete);
     } else {
       u_int64_t sent = 0, recv = 0;
       Connection_sumanddel(ConnListgetVal(curconn),curtime, &recv, &sent);
@@ -428,7 +428,10 @@ Process *getProcess(unsigned long inode, const char *devicename) {
           if (!ROBUST)
                   assert(false);
   }*/
-  ProcList_init(processes,newproc, processes);
+                 ProcList *temp=(ProcList *)malloc(sizeof(ProcList));
+    ProcList_init( temp,newproc, processes);
+    processes=temp;
+  //ProcList_init(processes,newproc, processes);
   return newproc;
 }
 
@@ -447,29 +450,38 @@ Process *getProcess(Connection *connection, const char *devicename) {
       inode = conninode[gethashstring(reversepacket)];
 
       if (inode == 0) {
-        delete reversepacket;
-        
-         ConnList_init(unknowntcp->connections,connection, unknowntcp->connections);
+        free(reversepacket);
+        ConnList *temp=(ConnList *)malloc(sizeof(ConnList));
+         ConnList_init(temp,connection, unknowntcp->connections);
+         unknowntcp->connections=temp;
         return unknowntcp;
       }
 
-      delete connection->refpacket;
+      free(connection->refpacket);
       connection->refpacket = reversepacket;
     }
 
   
 
   
-  Process *proc = (Process *)malloc(sizeof(Process));
+  Process *proc =NULL;// (Process *)malloc(sizeof(Process));
   if (inode != 0)
     proc = getProcess(inode, devicename);
 
   if (proc == NULL) {
-    Process_init(proc,inode, "", gethashstring(connection->refpacket));
-    ProcList_init( processes,proc, processes);
-  }
+    proc = (Process *)malloc(sizeof(Process));
 
-   ConnList_init(proc->connections,connection, proc->connections);
+    Process_init(proc,inode, "", gethashstring(connection->refpacket));
+    ProcList *temp=(ProcList *)malloc(sizeof(ProcList));
+    ProcList_init( temp,proc, processes);
+    processes=temp;
+
+  }
+  ConnList *tempList=(ConnList *)malloc(sizeof(ConnList));
+
+   ConnList_init(tempList,connection, proc->connections);
+   proc->connections=tempList;
+
   return proc;
 }
 
@@ -723,7 +735,7 @@ int process_tcp(u_char *userdata, const dp_header *header,
      Connection_init(connection,packet);
     getProcess(connection, args->device);
   }
-  delete packet;
+  free(packet);
 
   /* we're done now. */
   return true;
@@ -888,7 +900,7 @@ int dp_dispatch(struct dp_handle *handle, int count, u_char *user, int size) {
   handle->userdata = user;
   handle->userdata_size = size;
   printf("hi am here\n");
-  return pcap_dispatch(handle->pcap_handle, 5, dp_pcap_callback,
+  return pcap_dispatch(handle->pcap_handle, -1, dp_pcap_callback,
                        (u_char *)handle);
 }
 /**

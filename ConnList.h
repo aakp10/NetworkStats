@@ -12,7 +12,7 @@ struct _ConnList {
   ConnList *next;
 };
 
- void  ConnList_init(ConnList *clist,Connection *m_val, ConnList *m_next);
+ void  ConnList_init(ConnList *clist,Connection *m_val, ConnList *m_next=NULL);
  
   Connection *ConnListgetVal(ConnList *clist); 
   void setNext(ConnList *clist,ConnList *m_next) ;

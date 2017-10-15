@@ -72,9 +72,9 @@ void addConnection(Connection *conn,Packet *packet) {
 
 void Connection_init(Connection *conn,Packet *packet){
   //assert(packet != NULL);
-  connections = (ConnList *)malloc(sizeof(ConnList));
-  ConnList_init(connections,conn, connections);
-  
+  ConnList *temp = (ConnList *)malloc(sizeof(ConnList));
+  ConnList_init(temp,conn, connections);
+  connections=temp;
   conn->sent_packets =(PackList *)malloc(sizeof(PackList));
   PackList_init(conn->sent_packets);
 
@@ -104,16 +104,18 @@ u_int64_t PackList_sumanddel(PackList *pklist,timeval t) {
   u_int64_t retval = 0;
   PackListNode *current = pklist->content;
   PackListNode *previous = NULL;
+  printf("value of t :%d",t.tv_sec);
 
-  while (current != NULL) {
+  while (current ==NULL ? 0:current->next  ) {
     // std::cout << "Comparing " << current->val->time.tv_sec << " <= " <<
     // t.tv_sec - PERIOD << endl;
     if (current->val->time.tv_sec <= t.tv_sec - PERIOD) {
+
       if (current == pklist->content)
         pklist->content = NULL;
       else if (previous != NULL)
         previous->next = NULL;
-      delete current;
+      free(current) ;
       return retval;
     }
     retval += current->val->len;
@@ -126,7 +128,7 @@ u_int64_t PackList_sumanddel(PackList *pklist,timeval t) {
 
  void Connection_sumanddel(Connection *conn,timeval t, u_int64_t *recv, u_int64_t *sent) {
   (*sent) = (*recv) = 0;
-
+  printf("tval :%d",t.tv_sec);
   *sent = PackList_sumanddel(conn->sent_packets,t);
   *recv = PackList_sumanddel(conn->recv_packets,t);
 
@@ -156,6 +158,7 @@ Connection *findConnectionWithMatchingRefpacketOrSource(Packet *packet) {
       return ConnListgetVal(current);
     }
 
+
     current = getNext(current);
   }
   return findConnectionWithMatchingSource(packet);
@@ -170,7 +173,7 @@ Connection * findConnection(Packet *packet) {
     Connection *result =
         findConnectionWithMatchingRefpacketOrSource(invertedPacket);
 
-    delete invertedPacket;
+    free(invertedPacket);
     return result;
   }
 }
