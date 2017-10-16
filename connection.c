@@ -7,10 +7,10 @@
 #include "connection.h"
 #include "ConnList.h"
 #define PERIOD 5
-typedef int bool;
+
 
  ConnList *connections ;
- void PackListNode_init(PackListNode *pkList,Packet *m_val, PackListNode *m_next=NULL) {
+ void PackListNode_init(PackListNode *pkList,Packet *m_val, PackListNode *m_next) {
     pkList->val = m_val;
     pkList->next = m_next;
   }
@@ -18,7 +18,7 @@ typedef int bool;
   void PackList_init(PackList *pkList,Packet *m_val) {
     //assert(m_val != NULL);
     PackListNode *pkNode=(PackListNode *)malloc(sizeof(PackListNode));
-    PackListNode_init(pkNode,m_val);
+    PackListNode_init(pkNode,m_val,NULL);
     pkList->content = pkNode;
   }
 
@@ -27,7 +27,7 @@ void addPacket(PackList *pkList,Packet *p) {
     Packet *pk=(Packet *)malloc(sizeof(Packet));
     Packet_init(pk,*p);
     PackListNode *pkNode=(PackListNode *)malloc(sizeof(PackListNode));
-    PackListNode_init(pkNode,pk);
+    PackListNode_init(pkNode,pk,NULL);
     pkList->content = pkNode;
     return;
   }

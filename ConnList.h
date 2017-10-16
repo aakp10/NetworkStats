@@ -3,7 +3,7 @@
 
 #include <assert.h>
 #include "connection.h"
-typedef int bool;
+
 typedef struct _ConnList ConnList;
 struct _Connection;
 typedef struct _Connection Connection;

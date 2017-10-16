@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "packet.h"
 #include "ConnList.h"
-typedef int bool;
+
 typedef struct _PackListNode PackListNode;
 typedef struct _PackList PackList;
 typedef struct _Connection Connection;

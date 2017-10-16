@@ -1,4 +1,3 @@
-
 #ifndef __PACKET_H
 #define __PACKET_H
 #include <netinet/in.h>
@@ -9,10 +8,10 @@
 #include <sys/socket.h>
 
 #include <arpa/inet.h>
-typedef int bool;
+
 typedef struct _Packet Packet;
-typedef enum _direction direction;
-enum _direction { dir_unknown, dir_incoming, dir_outgoing };
+
+enum direction { dir_unknown, dir_incoming, dir_outgoing };
 
 /* To initialise this module, call getLocal with the currently
  * monitored device (e.g. "eth0:1") */

@@ -21,10 +21,11 @@
 #include <netinet/tcp.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <time.h>
 
 #define HASHKEYSIZE 92
 int promisc =1;
-typedef int bool;
+
 char errbuf[PCAP_ERRBUF_SIZE];
 using namespace std;
 //std::map<std::string, unsigned long> conninode;
@@ -1179,7 +1180,7 @@ bool sameinaddr(in_addr one, in_addr other) {
 }
 
 bool samein6addr(in6_addr one, in6_addr other) {
-  return std::equal(one.s6_addr, one.s6_addr + 16, other.s6_addr);
+  return memcmp(one.s6_addr, other.s6_addr,16);
 }
 
 bool Packet_isOlderThan(Packet *pk,timeval t) {
@@ -1620,7 +1621,7 @@ while(1){
         packets_read = true;
     }
     printf("will be refereshing now");
-    time_t const now = ::time(NULL);
+    time_t const now = time(NULL);
     if (last_refresh_time + refreshdelay <= now) {
       last_refresh_time = now;
      
