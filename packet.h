@@ -2,7 +2,7 @@
 #ifndef __PACKET_H
 #define __PACKET_H
 #include <netinet/in.h>
-#include <in6addr>
+//#include <in6addr>
 #include <net/ethernet.h>
 #include <sys/types.h>
 #include <sys/time.h>

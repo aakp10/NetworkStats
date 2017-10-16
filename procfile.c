@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <in6addr.h>
+//#include <in6addr.h>
 
 #include <net/ethernet.h>
 #include <ifaddrs.h>
