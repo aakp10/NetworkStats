@@ -107,6 +107,7 @@ void show_trace(Line *lines, int nproc) {
     log(&lines[i]);
     //free(lines[i]);
   }
+  free(lines);
 
   /* print the 'unknown' connections, for debugging */
   /*ConnList *curr_unknownconn = unknowntcp->connections;

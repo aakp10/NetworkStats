@@ -115,7 +115,8 @@ u_int64_t PackList_sumanddel(PackList *pklist,timeval t) {
         pklist->content = NULL;
       else if (previous != NULL)
         previous->next = NULL;
-      free(current) ;
+      //free(current) ;
+      current=NULL;
       return retval;
     }
     retval += current->val->len;
