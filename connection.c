@@ -1,20 +1,20 @@
-#include <iostream>
-#include <cassert>
+#include <stdio.h>
+#include <assert.h>
 
-
+#include <stdlib.h>
 
 
 #include "connection.h"
 #include "ConnList.h"
 #define PERIOD 5
-
+typedef int bool;
 
  ConnList *connections ;
- void PackListNode_init(PackListNode *pkList,Packet *m_val, PackListNode *m_next ) {
+ void PackListNode_init(PackListNode *pkList,Packet *m_val, PackListNode *m_next=NULL) {
     pkList->val = m_val;
     pkList->next = m_next;
   }
-  void PackList_init(PackList *pkList) { pkList->content = NULL; }
+  void PackList_init_beg(PackList *pkList) { pkList->content = NULL; }
   void PackList_init(PackList *pkList,Packet *m_val) {
     //assert(m_val != NULL);
     PackListNode *pkNode=(PackListNode *)malloc(sizeof(PackListNode));
@@ -76,10 +76,10 @@ void Connection_init(Connection *conn,Packet *packet){
   ConnList_init(temp,conn, connections);
   connections=temp;
   conn->sent_packets =(PackList *)malloc(sizeof(PackList));
-  PackList_init(conn->sent_packets);
+  PackList_init_beg(conn->sent_packets);
 
   conn->recv_packets =(PackList *)malloc(sizeof(PackList));
-  PackList_init(conn->sent_packets);
+  PackList_init_beg(conn->sent_packets);
   conn->sumSent = 0;
   conn->sumRecv = 0;
   

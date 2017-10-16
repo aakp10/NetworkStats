@@ -1,8 +1,9 @@
 #ifndef __ConnList_H
 #define __ConnList_H
 
-#include <cassert>
+#include <assert.h>
 #include "connection.h"
+typedef int bool;
 typedef struct _ConnList ConnList;
 struct _Connection;
 typedef struct _Connection Connection;

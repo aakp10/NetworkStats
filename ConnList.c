@@ -1,6 +1,7 @@
 #include "connection.h"
 #include "ConnList.h"
-
+#include <stdlib.h>
+typedef int bool;
 void ConnList_init(ConnList *clist,Connection *m_val, ConnList *m_next) {
     //assert(m_val != NULL);
    clist->val = m_val;

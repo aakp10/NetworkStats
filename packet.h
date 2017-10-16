@@ -1,14 +1,18 @@
+
 #ifndef __PACKET_H
 #define __PACKET_H
-
-#include <net/ethernet.h>
-
-#include <sys/socket.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
+#include <in6addr>
+#include <net/ethernet.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/socket.h>
 
+#include <arpa/inet.h>
+typedef int bool;
 typedef struct _Packet Packet;
-enum direction { dir_unknown, dir_incoming, dir_outgoing };
+typedef enum _direction direction;
+enum _direction { dir_unknown, dir_incoming, dir_outgoing };
 
 /* To initialise this module, call getLocal with the currently
  * monitored device (e.g. "eth0:1") */
@@ -30,10 +34,10 @@ struct _Packet{
   u_int32_t len;
   timeval time;
 };
-  void Packet_init(Packet *pk,in_addr m_sip, unsigned short m_sport, in_addr m_dip,
+  void Packet_init_in_addr(Packet *pk,in_addr m_sip, unsigned short m_sport, in_addr m_dip,
          unsigned short m_dport, u_int32_t m_len, timeval m_time,
          direction dir = dir_unknown);
-  void Packet_init(Packet *pk,in6_addr m_sip, unsigned short m_sport, in6_addr m_dip,
+  void Packet_init_in6_addr(Packet *pk,in6_addr m_sip, unsigned short m_sport, in6_addr m_dip,
          unsigned short m_dport, u_int32_t m_len, timeval m_time,
          direction dir = dir_unknown);
   

@@ -1,9 +1,10 @@
 #ifndef __CONNECTION_H
 #define __CONNECTION_H
 
-#include <iostream>
+#include <stdio.h>
 #include "packet.h"
 #include "ConnList.h"
+typedef int bool;
 typedef struct _PackListNode PackListNode;
 typedef struct _PackList PackList;
 typedef struct _Connection Connection;
@@ -22,7 +23,7 @@ struct _PackList {
 };
 
 
-void PackList_init(PackList *pkList) ;
+void PackList_init_beg(PackList *pkList) ;
 void PackList_init(PackList *pkList,Packet *m_val);
 /* sums up the total bytes used and removes 'old' packets */
   u_int64_t PackList_sumanddel(PackList *pklist,timeval t);

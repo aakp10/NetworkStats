@@ -1,17 +1,17 @@
 #include <netinet/in.h>
-#include <map>
-#include <cstdio>
+#include <stdlib.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <iterator>
-#include <algorithm>
+#include <in6addr.h>
+
 #include <net/ethernet.h>
 #include <ifaddrs.h>
-#include <cstring>
-#include <cassert>
+//#include <cstring>
+#include <assert.h>
 #include "packet.h"
 #include "connection.h"
 #include "ConnList.h"
@@ -20,11 +20,11 @@
 #include <netinet/ip6.h>
 #include <netinet/tcp.h>
 #include <sys/stat.h>
-#include <iostream>
+#include <stdio.h>
 
 #define HASHKEYSIZE 92
 int promisc =1;
-
+typedef int bool;
 char errbuf[PCAP_ERRBUF_SIZE];
 using namespace std;
 //std::map<std::string, unsigned long> conninode;
@@ -355,12 +355,33 @@ ProcList *processes=(ProcList *)malloc(sizeof(ProcList));
 struct prg_node {
   long inode;
   pid_t pid;
-  std::string cmdline;
+  char *cmdline;
 };
-std::map<unsigned long, prg_node *> inodeproc;
+//std::map<unsigned long, prg_node *> inodeproc;
+typedef struct _inode_Proc inode_Proc;
+struct _inode_Proc{
+  unsigned long inode;
+  prg_node * progNode;
+  inode_Proc *next;
+};
+inode_Proc *inodeproc=NULL;
+void inode_Proc_init(inode_Proc *iproc,unsigned long inodeVal,prg_node *pgnode,inode_Proc *m_next){
+iproc->inode=inodeVal;
+iproc->progNode=pgnode;
+iproc->next=m_next;
+}
+prg_node* inodeproc_search(unsigned long inode){
+  inode_Proc *curProc=inodeproc;
+  while(curProc!=NULL){
+    if(curProc->inode==inode)
+      return curProc->progNode;
+    curProc=curProc->next;
+  }
+  return NULL;
+}
 struct prg_node *findPID(unsigned long inode) {
   /* we first look in inodeproc */
-  struct prg_node *node = inodeproc[inode];
+  struct prg_node *node = inodeproc_search(inode);
 
   if (node != NULL) {
     
@@ -368,7 +389,7 @@ struct prg_node *findPID(unsigned long inode) {
   }
 
 
-  struct prg_node *retval = inodeproc[inode];
+  struct prg_node *retval = inodeproc_search(inode);
   
     
   
@@ -410,7 +431,7 @@ Process *getProcess(unsigned long inode, const char *devicename) {
     return proc;
 
   // extract program name and command line from data read from cmdline file
-  const char *prgname = node->cmdline.c_str();
+  const char *prgname = node->cmdline;
   const char *cmdline = prgname + strlen(prgname) + 1;
 
   Process *newproc = (Process *)malloc(sizeof(Process));
@@ -732,7 +753,7 @@ int process_tcp(u_char *userdata, const dp_header *header,
   switch (args->sa_family) {
   case AF_INET:
 
-    Packet_init(packet,args->ip_src, ntohs(tcp->th_sport), args->ip_dst,
+    Packet_init_in_addr(packet,args->ip_src, ntohs(tcp->th_sport), args->ip_dst,
                         ntohs(tcp->th_dport), header->len, header->ts);
 
 //    packet = new Packet(args->ip_src, ntohs(tcp->source), args->ip_dst,
@@ -741,7 +762,7 @@ int process_tcp(u_char *userdata, const dp_header *header,
     break;
   case AF_INET6:
  
-    Packet_init(packet,args->ip6_src, ntohs(tcp->th_sport), args->ip6_dst,
+    Packet_init_in6_addr(packet,args->ip6_src, ntohs(tcp->th_sport), args->ip6_dst,
                         ntohs(tcp->th_dport), header->len, header->ts);
 /*
     packet = new Packet(args->ip6_src, ntohs(tcp->source), args->ip6_dst,
@@ -1080,7 +1101,7 @@ struct tcp_hdr {
   u_short th_sum; /* checksum */
   u_short th_urp; /* urgent pointer */
 };
-void Packet_init(Packet *pk,in_addr m_sip, unsigned short m_sport, in_addr m_dip,
+void Packet_init_in_addr(Packet *pk,in_addr m_sip, unsigned short m_sport, in_addr m_dip,
                unsigned short m_dport, u_int32_t m_len, timeval m_time,
                direction m_dir) {
   pk->sip = m_sip;
@@ -1094,7 +1115,7 @@ void Packet_init(Packet *pk,in_addr m_sip, unsigned short m_sport, in_addr m_dip
   pk->hashstring = NULL;
 }
 
-void Packet_init(Packet *pk,in6_addr m_sip, unsigned short m_sport, in6_addr m_dip,
+void Packet_init_in6_addr(Packet *pk,in6_addr m_sip, unsigned short m_sport, in6_addr m_dip,
                unsigned short m_dport, u_int32_t m_len, timeval m_time,
                direction m_dir) {
   pk->sip6 = m_sip;
@@ -1122,13 +1143,13 @@ Packet * newInverted(Packet *pk) {
 
   if (pk->sa_family == AF_INET)
   {Packet *temp=(Packet *)malloc(sizeof(Packet));
-   Packet_init(temp,pk->dip, pk->dport,pk->sip, pk->sport, pk->len, pk->time, new_direction);
+   Packet_init_in_addr(temp,pk->dip, pk->dport,pk->sip, pk->sport, pk->len, pk->time, new_direction);
     
     return temp;
   }
   
     Packet *temp=(Packet *)malloc(sizeof(Packet));
-    Packet_init(temp,pk->dip6, pk->dport, pk->sip6, pk->sport, pk->len, pk->time, new_direction);
+    Packet_init_in6_addr(temp,pk->dip6, pk->dport, pk->sip6, pk->sport, pk->len, pk->time, new_direction);
     return temp;
   
    
@@ -1193,12 +1214,12 @@ bool Outgoing(Packet *pk) {
           islocal = local_addr_contains(local_addrs,pk->dip6);
 
         if (!islocal) {
-          std::cerr << "Neither dip nor sip are local: ";
+          printf("Neither dip nor sip are local: ");
           char addy[50];
           inet_ntop(AF_INET6, &(pk->sip6), addy, 49);
-          std::cerr << addy << std::endl;
+          //std::cerr << addy << std::endl;
           inet_ntop(AF_INET6, &(pk->dip6), addy, 49);
-          std::cerr << addy << std::endl;
+          //std::cerr << addy << std::endl;
 
           return false;
         }
@@ -1592,9 +1613,9 @@ while(1){
 //int retval=0;
      printf("retval :%d\n",retval );
        if (retval == -1)
-        std::cout<< "Error dispatching for device " << current_handle->devicename<<std::endl;
+        printf("Error dispatching for device %s \n ",current_handle->devicename);
       else if (retval < 0)
-        std::cout << "Error dispatching for device " << current_handle->devicename << std::endl;
+         printf("Error dispatching for device %s \n ",current_handle->devicename);
       else if (retval != 0)
         packets_read = true;
     }
